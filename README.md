@@ -3,4 +3,4 @@ Plutonke is a free app that provides an easy way to track your day-to-day expens
 
 
 
-Plutonke by Schonke
+Plutonke by SchonKe™
