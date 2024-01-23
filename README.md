@@ -1,2 +1,6 @@
 # Plutonke
-Plutonke, una app de gestión de gastos by Schonke
+Plutonke is a free app that provides an easy way to track your day-to-day expenses
+
+
+
+Plutonke by Schonke
