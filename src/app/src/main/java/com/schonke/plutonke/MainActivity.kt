@@ -3,9 +3,12 @@ package com.schonke.plutonke
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
@@ -18,75 +21,51 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.schonke.plutonke.ui.theme.PlutonkeTheme
+import kotlin.math.exp
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.ListItem
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val expense = Expense("Mac", "01-01-2024", 234, "Pinga")
+        val expenses = listOf<Expense>(Expense("Mac", "01-01-2024", 234, "Pinga"),
+            Expense("Valen", "01-02-2021", 534, "More"),
+            Expense("Valen", "01-02-2021", 534, "More"),
+            Expense("Valen", "01-02-2021", 534, "More"),
+            Expense("Valen", "01-02-2021", 534, "More"),
+            Expense("Valen", "01-02-2021", 534, "More"),
+            Expense("Valen", "01-02-2021", 534, "More"),
+            Expense("Valen", "01-02-2021", 534, "More"),
+            Expense("Valen", "01-02-2021", 534, "More"),
+            Expense("Valen", "01-02-2021", 534, "More"),
+            Expense("Valen", "01-02-2021", 534, "More"),
+            Expense("Monke", "12-01-2004", 89434, "Vato"))
+
         setContent {
             PlutonkeTheme {
-                // A surface container using the 'background' color from the theme
-//                Surface(
-//                    modifier = Modifier.fillMaxSize(),
-//                    color = MaterialTheme.colorScheme.background
-//                ) {
-//                    Greeting("YA VOLVI")
-//                }
-                Expense(expense)
+                showAllExpenses(expenses = expenses)
                 }
             }
         }
     }
 
 @Composable
-fun Expense(expense: Expense, modifier: Modifier = Modifier){
-    //TODO Cambiar category por su tipo
+fun showAllExpenses(expenses: List<Expense>){
+    LazyColumn (contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        items(expenses){ expense ->
+            showExpense(expense = expense)
 
-        Card(
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceVariant,
-                ),
-                modifier = Modifier
-                    .size(width = 240.dp, height = 100.dp)
-            ) {
-                Text(
-                    text = "Filled",
-                    modifier = Modifier
-                        .padding(16.dp),
-                    textAlign = TextAlign.Center,
-                )
-            }
-        ElevatedCard(
-                 elevation = CardDefaults.cardElevation(
-                     defaultElevation = 6.dp
-                 ),
-                 modifier = Modifier
-                     .size(width = 240.dp, height = 100.dp)
-             ) {
-                 Text(
-                     text = "Elevated",
-                     modifier = Modifier
-                         .padding(16.dp),
-                     textAlign = TextAlign.Center,
-                 )
-             }
-
-}
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier,
-
-
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    PlutonkeTheme {
-        Greeting("Android")
+        }
     }
+}
+
+@Composable
+fun showExpense(expense: Expense){
+    //TODO Cambiar category por su tipo
+    ListItem(
+        headlineContent = { Text(text = expense.name) },
+        supportingContent = { Text(text = "Category: " + expense.category) },
+        trailingContent = { Text(text = "$" + expense.price.toString()) }
+    )
 }
