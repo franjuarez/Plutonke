@@ -50,20 +50,7 @@ class MainActivity : ComponentActivity() {
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val comida = Category(name = "Comida", spentAmount = 234, maxAmount = 50000)
-        val diversion = Category(name = "Diversion", spentAmount = 110000, maxAmount = 150000)
-        val salidas = Category(name = "Salidas", spentAmount = 10000, maxAmount = 200000)
-        
-        val expenses = listOf<Expense>(Expense("Mac", "01-01-2024", 234, comida),
-            Expense("Minecraft Premium", "01-03-2021", 20000, diversion),
-            Expense("Parque de la costa", "01-02-2021", 90000, diversion),
-            Expense("Cumple de Monke", "12-01-2004", 10000, salidas))
-    
-        val categories = listOf<Category>(
-                comida,
-                diversion,
-                salidas
-        )
+
 
         setContent {
             PlutonkeTheme {
@@ -73,35 +60,7 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
-
-@Composable
-fun ShowHomeScreen(categories: List<Category>) {
-    LazyColumn (contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp)) {
-        items(categories){ category ->
-            ShowCategory(category = category)
-
-        }
-    }
 }
-@Composable
-fun ShowCategory(category: Category) {
-    ElevatedButton(onClick = { println("Click") },
-            modifier = Modifier.fillMaxSize()) {
-        Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Text(category.toString() , modifier = Modifier.weight(1f))
-            LinearProgressIndicator(progress = category.spentAmount / category.maxAmount.toFloat(),
-                    modifier = Modifier.size(150.dp, 30.dp)
-            )
-
-            Text(category.spentAmount.toString() + "/" + category.maxAmount.toString())
 
 
-        }
-    }
-}
-}
 

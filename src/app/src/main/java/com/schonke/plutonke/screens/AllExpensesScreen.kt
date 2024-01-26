@@ -46,9 +46,9 @@ import com.schonke.plutonke.Expense
 fun allExpensesScreen(navController: NavController){
 
     //DATA PARA EJEMPLOS
-    val comida = Category(name = "Comida", spentAmount = 234, maxAmount = 50000)
-    val diversion = Category(name = "Diversion", spentAmount = 110000, maxAmount = 150000)
-    val salidas = Category(name = "Salidas", spentAmount = 10000, maxAmount = 200000)
+    val comida = Category(name = "Comida", maxAmount = 50000)
+    val diversion = Category(name = "Diversion", maxAmount = 150000)
+    val salidas = Category(name = "Salidas", maxAmount = 200000)
 
     val expenses = listOf<Expense>(Expense("Mac", "01-01-2024", 234, comida),
         Expense("Minecraft Premium", "01-03-2021", 20000, diversion),
