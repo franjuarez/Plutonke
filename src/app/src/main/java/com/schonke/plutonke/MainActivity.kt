@@ -1,5 +1,6 @@
 package com.schonke.plutonke
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.preference.PreferenceActivity
 import android.widget.Space
@@ -41,8 +42,12 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
+import com.schonke.plutonke.ui.theme.PlutonkeTheme
+import androidx.compose.material3.Scaffold
+import com.schonke.plutonke.navigation.AppNavigation
 
 class MainActivity : ComponentActivity() {
+    @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val comida = Category(name = "Comida", spentAmount = 234, maxAmount = 50000)
@@ -59,18 +64,15 @@ class MainActivity : ComponentActivity() {
                 diversion,
                 salidas
         )
-        
+
         setContent {
             PlutonkeTheme {
-                Surface() {
-                    ShowHomeScreen(categories = categories)
-
-                }
+                Scaffold {
+                    AppNavigation()
                 }
             }
         }
     }
-
 
 @Composable
 fun ShowHomeScreen(categories: List<Category>) {
@@ -101,25 +103,5 @@ fun ShowCategory(category: Category) {
         }
     }
 }
-
-@OptIn(ExperimentalFoundationApi::class)
-@Composable
-fun ShowAllExpenses(expenses: List<Expense>){
-    LazyColumn (contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-                verticalArrangement = Arrangement.spacedBy(4.dp)) {
-        items(expenses){ expense ->
-            ShowExpense(expense = expense)
-            Divider()
-        }
-    }
 }
 
-@Composable
-fun ShowExpense(expense: Expense){
-    //TODO Cambiar category por su tipo
-    ListItem(
-        headlineContent = { Text(text = expense.name) },
-        supportingContent = { Text(text = expense.category.toString()) },
-        trailingContent = { Text(text = "$" + expense.price.toString()) },
-            )
-}
