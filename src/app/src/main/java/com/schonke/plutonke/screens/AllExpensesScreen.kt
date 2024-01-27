@@ -40,7 +40,7 @@ import kotlinx.coroutines.launch
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun allExpensesScreen(navController: NavController, drawerProperties: DrawerProperties){
+fun AllExpensesScreen(navController: NavController, drawerProperties: DrawerProperties){
 
     //DATA PARA EJEMPLOS
     val comida = Category(name = "Comida", maxAmount = 50000)

@@ -25,7 +25,6 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.schonke.plutonke.screens.HomeScreen
-import com.schonke.plutonke.screens.allExpensesScreen
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import androidx.navigation.compose.NavHost
@@ -39,7 +38,7 @@ data class DrawerProperties(
 )
 
 @Composable
-fun Drawer(navController: NavHostController) {
+fun Drawer(navController: NavHostController, mainScreen: @Composable (NavHostController, DrawerProperties) -> Unit) {
     val drawerProperties = DrawerProperties(scope = rememberCoroutineScope(), state = rememberDrawerState(initialValue = DrawerValue.Closed))
     var selectedItemIndex by rememberSaveable {
         mutableStateOf(0)
@@ -83,14 +82,6 @@ fun Drawer(navController: NavHostController) {
     },
     drawerState = drawerProperties.state){
         //TODO: ver como sacar esto de aca y meterlo en AppNavigation
-        NavHost(navController = navController, startDestination = AppScreens.HomeScreen.route) {
-            composable(route = AppScreens.HomeScreen.route) {
-                HomeScreen(navController = navController, drawerProperties = drawerProperties)
-            }
-
-            composable(route = AppScreens.AllExpensesScreen.route) {
-                allExpensesScreen(navController = navController, drawerProperties = drawerProperties)
-            }
-        }
+        mainScreen(navController, drawerProperties)
     }
 }
