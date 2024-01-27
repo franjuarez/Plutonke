@@ -54,7 +54,9 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             PlutonkeTheme {
-                Scaffold {
+                Surface (modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.background
+                    ) {
                     AppNavigation()
                 }
             }

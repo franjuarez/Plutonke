@@ -1,17 +1,13 @@
 package com.schonke.plutonke.screens
 
 import android.annotation.SuppressLint
-import android.graphics.drawable.Icon
-import android.media.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -33,17 +29,18 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.schonke.plutonke.Category
 import com.schonke.plutonke.Expense
+import com.schonke.plutonke.navigation.DrawerProperties
+import kotlinx.coroutines.launch
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun allExpensesScreen(navController: NavController){
+fun allExpensesScreen(navController: NavController, drawerProperties: DrawerProperties){
 
     //DATA PARA EJEMPLOS
     val comida = Category(name = "Comida", maxAmount = 50000)
@@ -61,7 +58,7 @@ fun allExpensesScreen(navController: NavController){
         salidas
     )
 
-    Scaffold (topBar = { topBar() } ) { innerPadding ->
+    Scaffold (topBar = { AllExpensesScreenTopBar(drawerProperties = drawerProperties) } ) { innerPadding ->
         Box(modifier = Modifier.padding(innerPadding)){
             showAllExpenses(expenses = expenses)
         }
@@ -71,15 +68,21 @@ fun allExpensesScreen(navController: NavController){
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun topBar(){
+fun AllExpensesScreenTopBar(drawerProperties: DrawerProperties){
     TopAppBar(
         title = { Text(text = "All Expenses") },
         colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background),
         navigationIcon = {
-            IconButton(onClick = { /* TODO: abrir drawer*/ }) {
-                Icon(Icons.Default.Menu, contentDescription = "Options")
-            }
-        }
+            IconButton(onClick = {
+                drawerProperties.scope.launch {
+                    drawerProperties.state.open()
+                }
+            }) {
+                Icon(
+                    imageVector = Icons.Default.Menu,
+                    contentDescription = "Menu"
+                )
+            }}
     )
 
 }
