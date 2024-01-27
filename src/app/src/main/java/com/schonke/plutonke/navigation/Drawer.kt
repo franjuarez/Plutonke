@@ -29,9 +29,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import androidx.navigation.compose.NavHost
 
-
-//video: https://www.youtube.com/watch?v=aYSarwALlpI
-
 data class DrawerProperties(
     val scope: CoroutineScope,
     val state: DrawerState
@@ -81,7 +78,6 @@ fun Drawer(navController: NavHostController, mainScreen: @Composable (NavHostCon
         }
     },
     drawerState = drawerProperties.state){
-        //TODO: ver como sacar esto de aca y meterlo en AppNavigation
         mainScreen(navController, drawerProperties)
     }
 }

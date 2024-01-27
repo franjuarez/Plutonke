@@ -37,6 +37,6 @@ val items = listOf(
         title = "Settings",
         selectedIcon = Icons.Filled.Settings,
         unselectedIcon = Icons.Outlined.Settings,
-        route = AppScreens.HomeScreen.route //TODO
+        route = AppScreens.ConfigurationScreen.route
     ),
 )
