@@ -66,11 +66,6 @@ fun Drawer(navController: NavHostController, mainScreen: @Composable (NavHostCon
                             contentDescription = item.title
                         )
                     },
-                    badge = {
-                        item.badgeCount?.let {
-                            Text(text = item.badgeCount.toString())
-                        }
-                    },
                     modifier = Modifier
                         .padding(NavigationDrawerItemDefaults.ItemPadding)
                 )
