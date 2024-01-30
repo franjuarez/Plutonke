@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.runtime.Composable
@@ -23,40 +24,35 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
 
 import com.schonke.plutonke.Category
 import com.schonke.plutonke.Expense
 import com.schonke.plutonke.navigation.DrawerProperties
 import kotlinx.coroutines.launch
-
-//@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
-//@Composable
-//fun HomeScreen(navController: NavController){
-//    Scaffold {
-//        Column (
-//            modifier = Modifier.fillMaxSize(),
-//            horizontalAlignment = Alignment.CenterHorizontally,
-//            verticalArrangement = Arrangement.Center
-//        ) {
-//            Text(text = "Home screen")
-//            Button(onClick = { navController.navigate(route = AppScreens.AllExpensesScreen.route) }) {
-//                Text(text = "See all expenses")
-//            }
-//        }
-//    }
-//}
 
 @Composable
 fun HomeScreen(navController: NavController, drawerProperties: DrawerProperties) {
@@ -86,7 +82,8 @@ fun HomeScreen(navController: NavController, drawerProperties: DrawerProperties)
     )
 
     Scaffold (
-        topBar = { HomeScreenTopBar(drawerProperties = drawerProperties) }
+        topBar = { HomeScreenTopBar(drawerProperties = drawerProperties) },
+        floatingActionButton = { HomeScreenAddExpenseButton() }
     )
     {innerPadding ->
         Box(modifier = Modifier.padding(innerPadding)){
@@ -114,6 +111,67 @@ fun HomeScreenTopBar(drawerProperties: DrawerProperties){
             }}
     )
 }
+
+@Composable
+fun HomeScreenAddExpenseButton() {
+    var isDialogVisible by remember { mutableStateOf(false) }
+
+    ExtendedFloatingActionButton(
+        text = { Text("Show drawer") },
+        icon = { Icon(Icons.Filled.Add, contentDescription = "Add an expense") },
+        onClick = { isDialogVisible = true }
+    )
+
+    AddExpenseDialog(isDialogVisible, onDismiss = { isDialogVisible = false })
+}
+
+
+@Composable
+fun AddExpenseDialog(isDialogVisible: Boolean, onDismiss: () -> Unit) {
+    var userName by remember { mutableStateOf("") }
+    var userAge by remember { mutableStateOf("") }
+
+    if(isDialogVisible) {
+        Dialog(onDismissRequest = onDismiss) {
+            Card() {
+                Column (
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.SpaceBetween
+                ){
+                    TextField(
+                        value = userName,
+                        onValueChange = { userName = it },
+                        label = { Text("Name") }
+                    )
+                    TextField(
+                        value = userAge,
+                        onValueChange = { userAge = it },
+                        label = { Text("Category") }
+                    )
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        horizontalArrangement = Arrangement.End,
+                    ) {
+                        TextButton(
+                            onClick = { onDismiss() },
+                            modifier = Modifier.padding(8.dp),
+                        ) {
+                            Text("Dismiss")
+                        }
+                        TextButton(
+                            onClick = { /* TODO: guardar los datos */ },
+                            modifier = Modifier.padding(8.dp),
+                        ) {
+                            Text("Confirm")
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
 
 @Composable
 fun ShowCategories(categories: List<Category>) {
