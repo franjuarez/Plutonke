@@ -46,7 +46,6 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
-import androidx.core.text.isDigitsOnly
 import androidx.navigation.NavController
 
 import com.schonke.plutonke.Category
@@ -138,6 +137,7 @@ fun AddExpenseDialog(isDialogVisible: Boolean, onDismiss: () -> Unit) {
                     AddExpenseHeadlineText()
                     AddExpenseNameField()
                     AddExpensePriceField()
+                    AddExpenseDateField()
                     AddExpenseCategoryField()
                     AddExpenseFinalizeButtons(onDismiss)
                 }
@@ -187,13 +187,51 @@ private fun AddExpenseCategoryField() {
         label = { Text("Category") }
     )
 }
+//TODO: mejorar mecanismo de chequeo de fecha (si se puede usar DatePicker)
+private fun isValidDate(date: String) : Boolean{
+    if(date.length > 10){ //Se paso de los caracteres 12/12/1212
+        return false
+    }
+    for(char in date){
+        if(!(char.isDigit() || char == '/')){
+            return false
+        }
+    }
+    return true
+}
+@Composable
+fun AddExpenseDateField() {
+    var expenseDate by remember { mutableStateOf("") }
+    OutlinedTextField(
+        value = expenseDate,
+        onValueChange = { if (isValidDate(it)) expenseDate = it },
+        label = { Text("dd/mm/yyyy") },
+    )
+}
+
+private fun isValidPrice(price: String) : Boolean{
+    var isDecimal = false
+    for(char in price){
+        if(char == ','){
+            if(isDecimal){
+                return false
+            }
+            isDecimal = true
+            continue
+        }
+        if(!char.isDigit()){
+            return false
+        }
+    }
+    return true
+}
 
 @Composable
 private fun AddExpensePriceField() {
     var expensePrice by remember { mutableStateOf("") }
     OutlinedTextField(
         value = expensePrice,
-        onValueChange = { if (it.isDigitsOnly()) expensePrice = it },
+        onValueChange = { if (isValidPrice(it)) expensePrice = it },
         label = { Text("Price $") },
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
     )
