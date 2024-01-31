@@ -7,6 +7,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.schonke.plutonke.screens.AllExpensesScreen
 import com.schonke.plutonke.screens.ConfigurationScreen
+import com.schonke.plutonke.screens.EditCategoriesScreen
 import com.schonke.plutonke.screens.HomeScreen
 
 @Composable
@@ -20,6 +21,10 @@ fun AppNavigation() {
 
             composable(route = AppScreens.AllExpensesScreen.route) {
                 AllExpensesScreen(navController = navController, drawerProperties = drawerProperties)
+            }
+
+            composable(route = AppScreens.EditCategoriesScreen.route) {
+                EditCategoriesScreen(navController = navController, drawerProperties = drawerProperties)
             }
 
             composable(route = AppScreens.ConfigurationScreen.route){

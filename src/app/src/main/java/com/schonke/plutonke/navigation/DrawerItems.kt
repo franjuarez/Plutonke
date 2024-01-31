@@ -1,10 +1,12 @@
 package com.schonke.plutonke.navigation
 
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Create
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.outlined.Create
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.List
@@ -32,6 +34,12 @@ val items = listOf(
         unselectedIcon = Icons.Outlined.List,
         badgeCount = 45,
         route = AppScreens.AllExpensesScreen.route
+    ),
+    NavigationItem(
+        title = "Edit Categories",
+        selectedIcon = Icons.Filled.Create,
+        unselectedIcon = Icons.Outlined.Create,
+        route = AppScreens.EditCategoriesScreen.route
     ),
     NavigationItem(
         title = "Settings",
