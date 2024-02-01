@@ -22,41 +22,36 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
 
 import com.schonke.plutonke.Category
 import com.schonke.plutonke.Expense
 import com.schonke.plutonke.navigation.DrawerProperties
 import kotlinx.coroutines.launch
-
-//@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
-//@Composable
-//fun HomeScreen(navController: NavController){
-//    Scaffold {
-//        Column (
-//            modifier = Modifier.fillMaxSize(),
-//            horizontalAlignment = Alignment.CenterHorizontally,
-//            verticalArrangement = Arrangement.Center
-//        ) {
-//            Text(text = "Home screen")
-//            Button(onClick = { navController.navigate(route = AppScreens.AllExpensesScreen.route) }) {
-//                Text(text = "See all expenses")
-//            }
-//        }
-//    }
-//}
 
 @Composable
 fun HomeScreen(navController: NavController, drawerProperties: DrawerProperties) {
@@ -86,7 +81,8 @@ fun HomeScreen(navController: NavController, drawerProperties: DrawerProperties)
     )
 
     Scaffold (
-        topBar = { HomeScreenTopBar(drawerProperties = drawerProperties) }
+        topBar = { HomeScreenTopBar(drawerProperties = drawerProperties) },
+        floatingActionButton = { HomeScreenAddExpenseButton() }
     )
     {innerPadding ->
         Box(modifier = Modifier.padding(innerPadding)){
@@ -116,54 +112,229 @@ fun HomeScreenTopBar(drawerProperties: DrawerProperties){
 }
 
 @Composable
-fun ShowCategories(categories: List<Category>) {
-    Column(){
-        Text(text = "Spent by Categories", modifier = Modifier
-            .padding(vertical = 4.dp)
-            .align(alignment = Alignment.CenterHorizontally))
-        LazyColumn (contentPadding = PaddingValues(horizontal = 16.dp, vertical = 10.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            items(categories){ category ->
-                ShowCategory(category = category)
+fun HomeScreenAddExpenseButton() {
+    var isDialogVisible by remember { mutableStateOf(false) }
 
+    ExtendedFloatingActionButton(
+        text = { Text("Add an expense") },
+        icon = { Icon(Icons.Filled.Add, contentDescription = "Add an expense") },
+        onClick = { isDialogVisible = true }
+    )
+    AddExpenseDialog(isDialogVisible, onDismiss = { isDialogVisible = false })
+}
+
+
+@Composable
+fun AddExpenseDialog(isDialogVisible: Boolean, onDismiss: () -> Unit) {
+
+    if(isDialogVisible) {
+        Dialog(onDismissRequest = onDismiss) {
+            Card() {
+                Column (
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.SpaceEvenly
+                ){
+                    AddExpenseHeadlineText()
+                    AddExpenseNameField()
+                    AddExpensePriceField()
+                    AddExpenseDateField()
+                    AddExpenseCategoryField()
+                    AddExpenseFinalizeButtons(onDismiss)
+                }
             }
         }
     }
 }
+
+@Composable
+private fun AddExpenseFinalizeButtons(onDismiss: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth(),
+        horizontalArrangement = Arrangement.End,
+    ) {
+        AddExpenseDismissButton(onDismiss)
+        AddExpenseConfirmButton()
+    }
+}
+
+@Composable
+private fun AddExpenseConfirmButton() {
+    TextButton(
+        onClick = { /* TODO: guardar los datos */ },
+        modifier = Modifier.padding(8.dp),
+    ) {
+        Text("Confirm")
+    }
+}
+
+@Composable
+private fun AddExpenseDismissButton(onDismiss: () -> Unit) {
+    TextButton(
+        onClick = { onDismiss() },
+        modifier = Modifier.padding(8.dp),
+    ) {
+        Text("Dismiss")
+    }
+}
+
+@Composable
+private fun AddExpenseCategoryField() {
+    var expenseCategory by remember { mutableStateOf("") }
+    OutlinedTextField(
+        value = expenseCategory,
+        onValueChange = { expenseCategory = it },
+        label = { Text("Category") }
+    )
+}
+//TODO: mejorar mecanismo de chequeo de fecha (si se puede usar DatePicker)
+private fun isValidDate(date: String) : Boolean{
+    if(date.length > 10){ //Se paso de los caracteres 12/12/1212
+        return false
+    }
+    for(char in date){
+        if(!(char.isDigit() || char == '/')){
+            return false
+        }
+    }
+    return true
+}
+@Composable
+fun AddExpenseDateField() {
+    var expenseDate by remember { mutableStateOf("") }
+    OutlinedTextField(
+        value = expenseDate,
+        onValueChange = { if (isValidDate(it)) expenseDate = it },
+        label = { Text("dd/mm/yyyy") },
+    )
+}
+
+private fun isValidPrice(price: String) : Boolean{
+    var isDecimal = false
+    for(char in price){
+        if(char == ','){
+            if(isDecimal){
+                return false
+            }
+            isDecimal = true
+            continue
+        }
+        if(!char.isDigit()){
+            return false
+        }
+    }
+    return true
+}
+
+@Composable
+private fun AddExpensePriceField() {
+    var expensePrice by remember { mutableStateOf("") }
+    OutlinedTextField(
+        value = expensePrice,
+        onValueChange = { if (isValidPrice(it)) expensePrice = it },
+        label = { Text("Price $") },
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+    )
+}
+
+@Composable
+private fun AddExpenseNameField() {
+    var expenseName by remember { mutableStateOf("") }
+    OutlinedTextField(
+        value = expenseName,
+        onValueChange = { expenseName = it },
+        label = { Text("Name") }
+    )
+}
+
+@Composable
+private fun AddExpenseHeadlineText() {
+    Text(
+        text = "Add an expense",
+        modifier = Modifier.padding(vertical = 10.dp)
+    )
+}
+
+
+@Composable
+fun ShowCategories(categories: List<Category>) {
+    Column(){
+        CategoriesHeadlineText(Modifier.align(alignment = Alignment.CenterHorizontally))
+        LazyColumn (contentPadding = PaddingValues(horizontal = 16.dp, vertical = 10.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            items(categories){ category ->
+                ShowCategory(category = category)
+            }
+        }
+    }
+}
+
+@Composable
+private fun CategoriesHeadlineText(modifier: Modifier) {
+    Text(
+        text = "Spent by Categories", modifier = modifier
+            .padding(vertical = 4.dp)
+    )
+}
+
 @Composable
 fun ShowCategory(category: Category) {
-    val numberColor = if (category.spentAmount > category.maxAmount) Color.Red else MaterialTheme.colorScheme.onPrimaryContainer
-    ElevatedButton(onClick = { println("Click") },
+    ElevatedButton(onClick = { /*TODO: mostrar gastos de la categoria especifica*/println("Click") },
         modifier = Modifier
             .fillMaxSize()
             .height(70.dp)) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Text(category.toString(), modifier = Modifier.weight(1f))
-
-            Spacer(modifier = Modifier.width(18.dp))
-
-            Column(modifier = Modifier.weight(1.2f)) {
-                LinearProgressIndicator(progress = category.spentAmount / category.maxAmount.toFloat(),
-                modifier = Modifier
-                    .height(25.dp)
-                    .padding(top = 6.dp))
-
-                Text(
-                    text = "$" + category.spentAmount.toString(),
-                    modifier = Modifier
-                        .align(alignment = Alignment.CenterHorizontally)
-                        .padding(top = 6.dp),
-                    fontSize = 12.sp)
-            }
-
-            Text("$" + category.maxAmount.toString(),
-                color = numberColor,
-                modifier = Modifier.weight(1f),
-                textAlign = TextAlign.End)
-        }
+        CategoryData(category)
     }
+}
+
+@Composable
+private fun CategoryData(category: Category) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        CategoryNameText(category, Modifier.weight(1f))
+        Spacer(modifier = Modifier.width(18.dp))
+        Column(modifier = Modifier.weight(1.2f)) {
+            CategoryProgressBar(category)
+            CategorySpentAmount(category, Modifier.align(alignment = Alignment.CenterHorizontally))
+        }
+        CategoryMaxAmount(category, Modifier.weight(1f))
+    }
+}
+
+@Composable
+private fun CategoryMaxAmount(category: Category, modifier: Modifier) {
+    val numberColor = if (category.spentAmount > category.maxAmount) Color.Red else MaterialTheme.colorScheme.onPrimaryContainer
+    Text(
+        "$" + category.maxAmount.toString(),
+        color = numberColor,
+        modifier = modifier,
+        textAlign = TextAlign.End
+    )
+}
+
+@Composable
+private fun CategorySpentAmount(category: Category, modifier: Modifier) {
+    Text(
+        text = "$" + category.spentAmount.toString(),
+        modifier = modifier.padding(top = 6.dp),
+        fontSize = 12.sp
+    )
+}
+
+@Composable
+private fun CategoryProgressBar(category: Category) {
+    LinearProgressIndicator(
+        progress = category.spentAmount / category.maxAmount.toFloat(),
+        modifier = Modifier
+            .height(25.dp)
+            .padding(top = 6.dp)
+    )
+}
+
+@Composable
+private fun CategoryNameText(category: Category, modifier: Modifier) {
+    Text(category.toString(), modifier = modifier)
 }
