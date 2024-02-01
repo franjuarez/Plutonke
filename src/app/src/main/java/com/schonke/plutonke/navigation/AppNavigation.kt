@@ -8,6 +8,7 @@ import androidx.navigation.compose.rememberNavController
 import com.schonke.plutonke.screens.AllExpensesScreen
 import com.schonke.plutonke.screens.ConfigurationScreen
 import com.schonke.plutonke.screens.HomeScreen
+import com.schonke.plutonke.viewModels.AddExpensesViewModel
 
 @Composable
 fun AppNavigation() {
@@ -15,7 +16,7 @@ fun AppNavigation() {
     Drawer(navController = navController) { navController, drawerProperties ->
         NavHost(navController = navController, startDestination = AppScreens.HomeScreen.route) {
             composable(route = AppScreens.HomeScreen.route) {
-                HomeScreen(navController = navController, drawerProperties = drawerProperties)
+                HomeScreen(navController = navController, drawerProperties = drawerProperties, addExpensesViewModel = AddExpensesViewModel())
             }
 
             composable(route = AppScreens.AllExpensesScreen.route) {

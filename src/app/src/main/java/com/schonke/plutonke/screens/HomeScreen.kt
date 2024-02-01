@@ -2,6 +2,8 @@
 
 package com.schonke.plutonke.screens
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.material3.Scaffold
@@ -27,6 +29,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.Card
+import androidx.compose.material3.DatePicker
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
@@ -38,6 +41,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -51,10 +55,12 @@ import androidx.navigation.NavController
 import com.schonke.plutonke.Category
 import com.schonke.plutonke.Expense
 import com.schonke.plutonke.navigation.DrawerProperties
+import com.schonke.plutonke.viewModels.AddExpensesViewModel
 import kotlinx.coroutines.launch
+import java.time.LocalDate
 
 @Composable
-fun HomeScreen(navController: NavController, drawerProperties: DrawerProperties) {
+fun HomeScreen(navController: NavController, drawerProperties: DrawerProperties, addExpensesViewModel: AddExpensesViewModel) {
     val comida = Category(name = "a", maxAmount = 50000)
     val diversion = Category(name = "Diversionaaaaaaa", maxAmount = 150000)
     val salidas = Category(name = "Salidas", maxAmount = 200000)
@@ -82,7 +88,7 @@ fun HomeScreen(navController: NavController, drawerProperties: DrawerProperties)
 
     Scaffold (
         topBar = { HomeScreenTopBar(drawerProperties = drawerProperties) },
-        floatingActionButton = { HomeScreenAddExpenseButton() }
+        floatingActionButton = { HomeScreenAddExpenseButton(addExpensesViewModel) }
     )
     {innerPadding ->
         Box(modifier = Modifier.padding(innerPadding)){
@@ -111,21 +117,28 @@ fun HomeScreenTopBar(drawerProperties: DrawerProperties){
     )
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun HomeScreenAddExpenseButton() {
-    var isDialogVisible by remember { mutableStateOf(false) }
+fun HomeScreenAddExpenseButton(addExpensesViewModel: AddExpensesViewModel) {
+    var isDialogVisible by remember { mutableStateOf(false) } //TODO: ver si agregar al viewmodel o no
 
     ExtendedFloatingActionButton(
         text = { Text("Add an expense") },
         icon = { Icon(Icons.Filled.Add, contentDescription = "Add an expense") },
         onClick = { isDialogVisible = true }
     )
-    AddExpenseDialog(isDialogVisible, onDismiss = { isDialogVisible = false })
+    AddExpenseDialog(addExpensesViewModel, isDialogVisible, onDismiss = { isDialogVisible = false })
 }
 
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun AddExpenseDialog(isDialogVisible: Boolean, onDismiss: () -> Unit) {
+fun AddExpenseDialog(addExpensesViewModel: AddExpensesViewModel, isDialogVisible: Boolean, onDismiss: () -> Unit) {
+
+    val expenseName :String by addExpensesViewModel.expenseName.observeAsState(initial = "")
+    val expenseDate :String by addExpensesViewModel.expenseDate.observeAsState(initial = "")
+    val expensePrice :String by addExpensesViewModel.expensePrice.observeAsState(initial = "")
+    val expenseCategory :String by addExpensesViewModel.expenseCategory.observeAsState(initial = "")
 
     if(isDialogVisible) {
         Dialog(onDismissRequest = onDismiss) {
@@ -135,11 +148,19 @@ fun AddExpenseDialog(isDialogVisible: Boolean, onDismiss: () -> Unit) {
                     verticalArrangement = Arrangement.SpaceEvenly
                 ){
                     AddExpenseHeadlineText()
-                    AddExpenseNameField()
-                    AddExpensePriceField()
-                    AddExpenseDateField()
-                    AddExpenseCategoryField()
-                    AddExpenseFinalizeButtons(onDismiss)
+                    AddExpenseNameField(expenseName) { addExpensesViewModel.onNameChanged(it) }
+                    AddExpensePriceField(expensePrice) { addExpensesViewModel.onPriceChanged(it) }
+                    AddExpenseDateField(expenseDate) { addExpensesViewModel.onDateChanged(it) }
+                    AddExpenseCategoryField(expenseCategory) {
+                        addExpensesViewModel.onCategoryChanged(
+                            it
+                        )
+                    }
+                    AddExpenseFinalizeButtons(onDismiss) {
+                        if(addExpensesViewModel.onConfirmPressed()){
+                            onDismiss()
+                        }
+                    }
                 }
             }
         }
@@ -147,21 +168,23 @@ fun AddExpenseDialog(isDialogVisible: Boolean, onDismiss: () -> Unit) {
 }
 
 @Composable
-private fun AddExpenseFinalizeButtons(onDismiss: () -> Unit) {
+private fun AddExpenseFinalizeButtons(onDismiss: () -> Unit, onConfirm: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth(),
         horizontalArrangement = Arrangement.End,
     ) {
         AddExpenseDismissButton(onDismiss)
-        AddExpenseConfirmButton()
+        AddExpenseConfirmButton(onConfirm)
     }
 }
 
 @Composable
-private fun AddExpenseConfirmButton() {
+private fun AddExpenseConfirmButton(onConfirm: () -> Unit) {
     TextButton(
-        onClick = { /* TODO: guardar los datos */ },
+        onClick = {
+            onConfirm()
+                  },
         modifier = Modifier.padding(8.dp),
     ) {
         Text("Confirm")
@@ -179,70 +202,38 @@ private fun AddExpenseDismissButton(onDismiss: () -> Unit) {
 }
 
 @Composable
-private fun AddExpenseCategoryField() {
-    var expenseCategory by remember { mutableStateOf("") }
+private fun AddExpenseCategoryField(expenseCategory: String, onValueChange: (String) -> Unit) {
     OutlinedTextField(
         value = expenseCategory,
-        onValueChange = { expenseCategory = it },
+        onValueChange = { onValueChange(it) },
         label = { Text("Category") }
     )
 }
-//TODO: mejorar mecanismo de chequeo de fecha (si se puede usar DatePicker)
-private fun isValidDate(date: String) : Boolean{
-    if(date.length > 10){ //Se paso de los caracteres 12/12/1212
-        return false
-    }
-    for(char in date){
-        if(!(char.isDigit() || char == '/')){
-            return false
-        }
-    }
-    return true
-}
+
 @Composable
-fun AddExpenseDateField() {
-    var expenseDate by remember { mutableStateOf("") }
+fun AddExpenseDateField(expenseDate: String, onValueChange: (String) -> Unit) {
     OutlinedTextField(
         value = expenseDate,
-        onValueChange = { if (isValidDate(it)) expenseDate = it },
+        onValueChange = { onValueChange(it) },
         label = { Text("dd/mm/yyyy") },
     )
 }
 
-private fun isValidPrice(price: String) : Boolean{
-    var isDecimal = false
-    for(char in price){
-        if(char == ','){
-            if(isDecimal){
-                return false
-            }
-            isDecimal = true
-            continue
-        }
-        if(!char.isDigit()){
-            return false
-        }
-    }
-    return true
-}
-
 @Composable
-private fun AddExpensePriceField() {
-    var expensePrice by remember { mutableStateOf("") }
+private fun AddExpensePriceField(expensePrice: String, onValueChange: (String) -> Unit) {
     OutlinedTextField(
         value = expensePrice,
-        onValueChange = { if (isValidPrice(it)) expensePrice = it },
+        onValueChange = { onValueChange(it) },
         label = { Text("Price $") },
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
     )
 }
 
 @Composable
-private fun AddExpenseNameField() {
-    var expenseName by remember { mutableStateOf("") }
+private fun AddExpenseNameField(expenseName: String, onValueChange: (String) -> Unit) {
     OutlinedTextField(
         value = expenseName,
-        onValueChange = { expenseName = it },
+        onValueChange = { onValueChange(it) },
         label = { Text("Name") }
     )
 }
@@ -254,7 +245,6 @@ private fun AddExpenseHeadlineText() {
         modifier = Modifier.padding(vertical = 10.dp)
     )
 }
-
 
 @Composable
 fun ShowCategories(categories: List<Category>) {
