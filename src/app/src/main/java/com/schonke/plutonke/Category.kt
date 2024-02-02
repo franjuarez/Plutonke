@@ -1,8 +1,8 @@
 package com.schonke.plutonke
 
 class Category (
-    val name: String,
-    val maxAmount: Int,
+    var name: String,
+    var maxAmount: Int,
     //TODO: FALTA LO DE REINCIAR CADA X TIEMPO
     )
 {

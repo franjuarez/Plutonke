@@ -14,7 +14,7 @@ import com.schonke.plutonke.screens.HomeScreen
 fun AppNavigation() {
     val navController = rememberNavController()
     Drawer(navController = navController) { navController, drawerProperties ->
-        NavHost(navController = navController, startDestination = AppScreens.HomeScreen.route) {
+        NavHost(navController = navController, startDestination = AppScreens.EditCategoriesScreen.route) {
             composable(route = AppScreens.HomeScreen.route) {
                 HomeScreen(navController = navController, drawerProperties = drawerProperties)
             }
