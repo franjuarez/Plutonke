@@ -19,13 +19,17 @@ class CategoriesViewModel: ViewModel() {
         val cumpleanios_de_urko = Category(name = "Cumples de Urko", maxAmount = 999999)
         val otra_categoria = Category(name = "otra categoria", maxAmount = 10000)
         val steam = Category(name = "steam", maxAmount = 25000)
+        val ultima = Category(name = "ultima", maxAmount = 20000)
+        val ultima2 = Category(name = "ultima2", maxAmount = 20001)
         categories = listOf(
             comida,
             diversion,
             salidas,
             cumpleanios_de_urko,
             otra_categoria,
-            steam
+            steam,
+            ultima,
+            ultima2
         )
         println("init")
     }

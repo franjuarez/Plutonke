@@ -62,7 +62,10 @@ fun EditCategoriesScreen(navController: NavController, drawerProperties: DrawerP
     Scaffold(
         topBar = { TopBarConfiguration(drawerProperties = drawerProperties) }
     ) {
-        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        innerPadding ->
+        Box(modifier = Modifier
+            .fillMaxSize()
+            .padding(innerPadding), contentAlignment = Alignment.Center) {
             if (categories != null) {
                 Categories(categories)
             }
@@ -72,52 +75,59 @@ fun EditCategoriesScreen(navController: NavController, drawerProperties: DrawerP
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
+fun CategoryCard(onClick: () -> Unit, category: Category) {
+    Card(
+        onClick = onClick,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(6.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .padding(8.dp)
+        ) {
+            Text(
+                text = "Name: ${category.name}",
+                style = TextStyle(fontWeight = FontWeight.Bold)
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = "Max Amount: ${category.maxAmount}",
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = "Spent Amount: ${category.spentAmount}",
+            )
+        }
+    }
+}
+
+@Composable
 fun Categories(categories: List<Category>) {
     var isDialogVisible by remember { mutableStateOf(false) }
     var selectedCategory by remember { mutableStateOf(categories[0])} // medio nefasto pero bueno
-    println("categoriesss")
+
     LazyColumn() {
         items(categories){ category ->
-            Card(
-                onClick = {
-                    isDialogVisible = true
-                    selectedCategory = category
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(6.dp)
-            ) {
-                Column(
-                    modifier = Modifier
-                        .padding(16.dp)
-                ) {
-                    Text(
-                        text = "Name: ${category.name}",
-                        style = TextStyle(fontWeight = FontWeight.Bold)
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = "Max Amount: ${category.maxAmount}",
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = "Spent Amount: ${category.spentAmount}",
-                    )
-                }
-            }
+            CategoryCard(onClick = {
+                isDialogVisible = true
+                selectedCategory = category
+            },
+                category = category)
         }
     }
 
-    AlertDialogExample(
+    AlertDialog(
         onDismissRequest = {isDialogVisible = false},
         onConfirmation = {isDialogVisible = false},
         category = selectedCategory,
-        isDialogVisible = isDialogVisible)
+        isDialogVisible = isDialogVisible
+    )
 }
 
 
 @Composable
-fun AlertDialogExample(
+fun AlertDialog(
     onDismissRequest: () -> Unit,
     onConfirmation: () -> Unit,
     category: Category,
@@ -136,10 +146,9 @@ fun AlertDialogExample(
                         text = "Edit " + category.name + " properties",
                         modifier = Modifier.padding(vertical = 10.dp)
                     )
-
                     //EditCatNameField(category = category)
                     var categoryName by remember { mutableStateOf(category.name)}
-                    var categorySpentAmount by remember { mutableIntStateOf(category.spentAmount) }
+
                     var categoryMaxAmount by remember { mutableIntStateOf(category.maxAmount) }
 
                     OutlinedTextField(
@@ -148,12 +157,7 @@ fun AlertDialogExample(
                         label = { Text("Name") },
                         placeholder = { Text(category.name) }
                     )
-                    OutlinedTextField(
-                        value = categorySpentAmount.toString(),
-                        onValueChange = { categorySpentAmount = it.toInt() },
-                        label = { Text("Spent") },
-                        placeholder = { Text(category.spentAmount.toString()) }
-                    )
+
                     OutlinedTextField(
                         value = categoryMaxAmount.toString(),
                         onValueChange = { categoryMaxAmount = it.toInt() },
@@ -171,7 +175,7 @@ fun AlertDialogExample(
                                 category = category,
                                 newName = categoryName,
                                 newMaxAmount = categoryMaxAmount,
-                                newSpentAmount = categorySpentAmount)
+                                )
                             onConfirmation()
                         }) {
                             Text("Confirm")
