@@ -9,6 +9,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -17,6 +19,7 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardElevation
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -35,6 +38,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
@@ -43,51 +48,62 @@ import androidx.wear.compose.material.dialog.Dialog
 import com.schonke.plutonke.Category
 import com.schonke.plutonke.navigation.DrawerProperties
 import androidx.compose.ui.window.Dialog
+import com.schonke.plutonke.components.CategoriesViewModel
 import com.schonke.plutonke.components.CategoryViewModel
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun EditCategoriesScreen(navController: NavController, drawerProperties: DrawerProperties) {
-    // aca se lo pediriamos a la bd
-    val comida = Category(name = "a", maxAmount = 50000)
-    val diversion = Category(name = "Diversionaaaaaaa", maxAmount = 150000)
-    val salidas = Category(name = "Salidas", maxAmount = 200000)
-    val cumpleanios_de_urko = Category(name = "Cumples de Urko", maxAmount = 999999)
-    val otra_categoria = Category(name = "otra categoria", maxAmount = 10000)
-    val steam = Category(name = "steam", maxAmount = 25000)
-    val categories = listOf(
-        comida,
-        diversion,
-        salidas,
-        cumpleanios_de_urko,
-        otra_categoria,
-        steam
-    )
+
+    val categoriesViewModel = CategoriesViewModel()
+    categoriesViewModel.init()
+    val categories = categoriesViewModel.categories
 
     Scaffold(
         topBar = { TopBarConfiguration(drawerProperties = drawerProperties) }
     ) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Categories(categories)
+            if (categories != null) {
+                Categories(categories)
+            }
         }
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Categories(categories: List<Category>) {
     var isDialogVisible by remember { mutableStateOf(false) }
     var selectedCategory by remember { mutableStateOf(categories[0])} // medio nefasto pero bueno
-
+    println("categoriesss")
     LazyColumn() {
         items(categories){ category ->
-            ElevatedButton(
-                onClick =  {
+            Card(
+                onClick = {
                     isDialogVisible = true
                     selectedCategory = category
                 },
-                modifier = Modifier.fillMaxSize())
-            {
-                Text(category.name)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(6.dp)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .padding(16.dp)
+                ) {
+                    Text(
+                        text = "Name: ${category.name}",
+                        style = TextStyle(fontWeight = FontWeight.Bold)
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "Max Amount: ${category.maxAmount}",
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "Spent Amount: ${category.spentAmount}",
+                    )
+                }
             }
         }
     }
@@ -106,7 +122,6 @@ fun AlertDialogExample(
     onConfirmation: () -> Unit,
     category: Category,
     isDialogVisible: Boolean,
-
 ) {
     if (isDialogVisible) {
         val viewModel = CategoryViewModel()
@@ -123,11 +138,9 @@ fun AlertDialogExample(
                     )
 
                     //EditCatNameField(category = category)
-
                     var categoryName by remember { mutableStateOf(category.name)}
                     var categorySpentAmount by remember { mutableIntStateOf(category.spentAmount) }
                     var categoryMaxAmount by remember { mutableIntStateOf(category.maxAmount) }
-
 
                     OutlinedTextField(
                         value = categoryName,
@@ -147,7 +160,6 @@ fun AlertDialogExample(
                         label = { Text("Max") },
                         placeholder = { Text(category.maxAmount.toString()) }
                     )
-
 
                     Row() {
                         TextButton(onClick = { onDismissRequest() }) {
