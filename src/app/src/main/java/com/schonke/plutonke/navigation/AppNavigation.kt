@@ -5,6 +5,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.schonke.plutonke.data.RetroFitServiceFactory
 import com.schonke.plutonke.screens.AllExpensesScreen
 import com.schonke.plutonke.screens.ConfigurationScreen
 import com.schonke.plutonke.screens.HomeScreen
@@ -12,6 +13,9 @@ import com.schonke.plutonke.viewModels.AddExpensesViewModel
 
 @Composable
 fun AppNavigation() {
+
+
+
     val navController = rememberNavController()
     Drawer(navController = navController) { navController, drawerProperties ->
         NavHost(navController = navController, startDestination = AppScreens.HomeScreen.route) {
