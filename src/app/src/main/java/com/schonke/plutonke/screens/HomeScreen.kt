@@ -69,12 +69,19 @@ fun HomeScreen(navController: NavController, drawerProperties: DrawerProperties,
     val steam = Category(name = "steam", maxAmount = 25000)
 
 
+//    val expenses = listOf<Expense>(
+//        Expense("1", "Mac", "01-01-2024", 234, comida),
+//        Expense("1", "Minecraft Premium", "01-03-2021", 20000, diversion),
+//        Expense("1", "Parque de la costa", "01-02-2021", 90000, diversion),
+//        Expense("1", "Cumple de Monke", "12-01-2004", 10000, salidas)
+//    )
     val expenses = listOf<Expense>(
-        Expense("1", "Mac", "01-01-2024", 234, comida),
-        Expense("1", "Minecraft Premium", "01-03-2021", 20000, diversion),
-        Expense("1", "Parque de la costa", "01-02-2021", 90000, diversion),
-        Expense("1", "Cumple de Monke", "12-01-2004", 10000, salidas)
+        Expense("1", "Mac", "01-01-2024", 234, "comida"),
+        Expense("1", "Minecraft Premium", "01-03-2021", 20000, "diversion"),
+        Expense("1", "Parque de la costa", "01-02-2021", 90000, "diversion"),
+        Expense("1", "Cumple de Monke", "12-01-2004", 10000, "salidas")
     )
+
     comida.spentAmount = 25000
     diversion.spentAmount = 200000
     val categories = listOf<Category>(

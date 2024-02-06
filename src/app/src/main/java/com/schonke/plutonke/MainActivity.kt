@@ -10,7 +10,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import com.schonke.plutonke.ui.theme.PlutonkeTheme
 import androidx.lifecycle.lifecycleScope
-import com.schonke.plutonke.data.RetroFitServiceFactory
+import com.schonke.plutonke.data.BackendFactory
 import com.schonke.plutonke.navigation.AppNavigation
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -20,16 +20,13 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val service = RetroFitServiceFactory.makeRetroFitService()
+        val backend = BackendFactory.makeBackend()
 
         lifecycleScope.launch(Dispatchers.IO) {
-            val call = service.getAllExpenses()
+            val call = backend.getAllExpenses()
             val expenses : List<Expense>? = call.body()
-            if (call.isSuccessful) {
-                println(expenses)
-            }
-            else {
-                println("al vino vino tu novia todo junta con mi pito")
+            if (!call.isSuccessful) {
+                println("Error! Can't connect to backend")
             }
         }
 

@@ -1,11 +1,9 @@
 package com.schonke.plutonke.navigation
 
 import androidx.compose.runtime.Composable
-import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.schonke.plutonke.data.RetroFitServiceFactory
 import com.schonke.plutonke.screens.AllExpensesScreen
 import com.schonke.plutonke.screens.ConfigurationScreen
 import com.schonke.plutonke.screens.HomeScreen
