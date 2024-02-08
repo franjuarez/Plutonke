@@ -1,4 +1,4 @@
-package com.schonke.plutonke
+package com.schonke.plutonke.types
 
 class Category (
     val name: String,

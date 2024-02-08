@@ -1,4 +1,4 @@
-package com.schonke.plutonke
+package com.schonke.plutonke.types
 
 data class Expense(
     val id: String,

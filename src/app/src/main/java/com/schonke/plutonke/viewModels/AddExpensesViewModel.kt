@@ -12,7 +12,7 @@ const val DATE_FORMAT = "dd/MM/yyyy"
 const val VALID_DATE_LENGTH = 10
 const val DATE_TOKEN = '/'
 
-class AddExpensesViewModel : ViewModel() {
+class AddExpensesViewModel(private val dataViewModel: SharedDataViewModel) : ViewModel() {
 
     private val _expenseName = MutableLiveData<String>()
     val expenseName : LiveData<String> = _expenseName

@@ -33,42 +33,51 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.schonke.plutonke.Category
-import com.schonke.plutonke.Expense
+import com.schonke.plutonke.types.Category
+import com.schonke.plutonke.types.Expense
 import com.schonke.plutonke.navigation.DrawerProperties
+import com.schonke.plutonke.viewModels.AllExpensesScreenViewModel
 import kotlinx.coroutines.launch
+import kotlin.math.exp
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun AllExpensesScreen(navController: NavController, drawerProperties: DrawerProperties){
+fun AllExpensesScreen(navController: NavController, drawerProperties: DrawerProperties, allExpensesScreenViewModel: AllExpensesScreenViewModel){
 
+    // -----------------------------------------------DATA--------------------------------------------------
     //DATA PARA EJEMPLOS
-    val comida = Category(name = "Comida", maxAmount = 50000)
-    val diversion = Category(name = "Diversion", maxAmount = 150000)
-    val salidas = Category(name = "Salidas", maxAmount = 200000)
+//    val comida = Category(name = "Comida", maxAmount = 50000)
+//    val diversion = Category(name = "Diversion", maxAmount = 150000)
+//    val salidas = Category(name = "Salidas", maxAmount = 200000)
+//
+////    val expenses = listOf<Expense>(Expense("1", "Mac", "01-01-2024", 234, comida),
+////        Expense("1", "Minecraft Premium", "01-03-2021", 20000, diversion),
+////        Expense("1", "Parque de la costa", "01-02-2021", 90000, diversion),
+////        Expense("1", "Cumple de Monke", "12-01-2004", 10000, salidas))
+//
+//    val expenses = listOf<Expense>(
+//        Expense("1", "Mac", "01-01-2024", 234, "comida"),
+//        Expense("1", "Minecraft Premium", "01-03-2021", 20000, "diversion"),
+//        Expense("1", "Parque de la costa", "01-02-2021", 90000, "diversion"),
+//        Expense("1", "Cumple de Monke", "12-01-2004", 10000, "salidas")
+//    )
+//
+//    val categories = listOf<Category>(
+//        comida,
+//        diversion,
+//        salidas
+//    )
 
-//    val expenses = listOf<Expense>(Expense("1", "Mac", "01-01-2024", 234, comida),
-//        Expense("1", "Minecraft Premium", "01-03-2021", 20000, diversion),
-//        Expense("1", "Parque de la costa", "01-02-2021", 90000, diversion),
-//        Expense("1", "Cumple de Monke", "12-01-2004", 10000, salidas))
+    // -----------------------------------------------DATA--------------------------------------------------
 
-    val expenses = listOf<Expense>(Expense("1", "Mac", "01-01-2024", 234, "comida"),
-        Expense("1", "Minecraft Premium", "01-03-2021", 20000, "diversion"),
-        Expense("1", "Parque de la costa", "01-02-2021", 90000, "diversion"),
-        Expense("1", "Cumple de Monke", "12-01-2004", 10000, "salidas"))
-
-    val categories = listOf<Category>(
-        comida,
-        diversion,
-        salidas
-    )
+    val expenses = allExpensesScreenViewModel.sharedExpenses.value
+    println(expenses)
 
     Scaffold (topBar = { AllExpensesScreenTopBar(drawerProperties = drawerProperties) } ) { innerPadding ->
         Box(modifier = Modifier.padding(innerPadding)){
             showAllExpenses(expenses = expenses)
         }
     }
-
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -93,7 +102,11 @@ fun AllExpensesScreenTopBar(drawerProperties: DrawerProperties){
 }
 
 @Composable
-fun showAllExpenses(expenses: List<Expense>){
+fun showAllExpenses(expenses: List<Expense>?){
+    if(expenses == null){
+        println("Natiii")
+        return
+    }
     LazyColumn (contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
         verticalArrangement = Arrangement.spacedBy(4.dp),
         modifier = Modifier.background(MaterialTheme.colorScheme.background)

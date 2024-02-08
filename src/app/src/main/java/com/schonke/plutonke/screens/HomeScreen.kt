@@ -29,7 +29,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.Card
-import androidx.compose.material3.DatePicker
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
@@ -52,15 +51,16 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
 
-import com.schonke.plutonke.Category
-import com.schonke.plutonke.Expense
+import com.schonke.plutonke.types.Category
+import com.schonke.plutonke.types.Expense
 import com.schonke.plutonke.navigation.DrawerProperties
 import com.schonke.plutonke.viewModels.AddExpensesViewModel
+import com.schonke.plutonke.viewModels.HomeScreenViewModel
 import kotlinx.coroutines.launch
-import java.time.LocalDate
 
 @Composable
-fun HomeScreen(navController: NavController, drawerProperties: DrawerProperties, addExpensesViewModel: AddExpensesViewModel) {
+fun HomeScreen(navController: NavController, drawerProperties: DrawerProperties, homeScreenViewModel: HomeScreenViewModel, addExpensesViewModel: AddExpensesViewModel) {
+    // ---------------------------- DATA ----------------------------------------
     val comida = Category(name = "a", maxAmount = 50000)
     val diversion = Category(name = "Diversionaaaaaaa", maxAmount = 150000)
     val salidas = Category(name = "Salidas", maxAmount = 200000)
@@ -92,6 +92,10 @@ fun HomeScreen(navController: NavController, drawerProperties: DrawerProperties,
         otra_categoria,
         steam
     )
+
+    // ---------------------------- DATA ----------------------------------------
+
+    //val categories = homeScreenViewModel.sharedCategories
 
     Scaffold (
         topBar = { HomeScreenTopBar(drawerProperties = drawerProperties) },
