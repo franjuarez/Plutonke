@@ -24,10 +24,9 @@ class SharedDataViewModel() : ViewModel() {
             try{
                 isLoading.postValue(true)
                 val expenses = backend.fetchExpenses()
-    //            val categories = backend.fetchCategories()
+                val categories = backend.fetchCategories()
                 _sharedExpenses.postValue(expenses)
-                println("cargado" + expenses)
-                //_sharedCategories.value = categories
+                _sharedCategories.postValue(categories)
             } finally {
                 isLoading.postValue(false)
             }

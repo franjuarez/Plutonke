@@ -1,4 +1,5 @@
 package com.schonke.plutonke.data
+import com.schonke.plutonke.types.Category
 import com.schonke.plutonke.types.Expense
 import retrofit2.Response
 import retrofit2.Retrofit
@@ -11,6 +12,9 @@ const val SERVER_URL = "http://10.0.2.2:8080/"  //Para emulador
 interface Backend {
     @GET("expenses")
     suspend fun getAllExpenses(): Response<List<Expense>>
+
+    @GET("categories")
+    suspend fun getAllCategories(): Response<List<Category>>
 }
 
 object BackendFactory {

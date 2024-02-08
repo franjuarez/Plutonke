@@ -61,41 +61,34 @@ import kotlinx.coroutines.launch
 @Composable
 fun HomeScreen(navController: NavController, drawerProperties: DrawerProperties, homeScreenViewModel: HomeScreenViewModel, addExpensesViewModel: AddExpensesViewModel) {
     // ---------------------------- DATA ----------------------------------------
-    val comida = Category(name = "a", maxAmount = 50000)
-    val diversion = Category(name = "Diversionaaaaaaa", maxAmount = 150000)
-    val salidas = Category(name = "Salidas", maxAmount = 200000)
-    val cumpleanios_de_urko = Category(name = "Cumples de Urko", maxAmount = 999999)
-    val otra_categoria = Category(name = "otra categoria", maxAmount = 10000)
-    val steam = Category(name = "steam", maxAmount = 25000)
-
-
+//    val comida = Category(id = "1", name = "a", maxAmount = 50000)
+//    val diversion = Category(id = "2", name = "Diversionaaaaaaa", maxAmount = 150000)
+//    val salidas = Category(id = "3", name = "Salidas", maxAmount = 200000)
+//    val cumpleanios_de_urko = Category(id = "4", name = "Cumples de Urko", maxAmount = 999999)
+//    val otra_categoria = Category(id = "5", name = "otra categoria", maxAmount = 10000)
+//    val steam = Category(id = "6", name = "steam", maxAmount = 25000)
+//
 //    val expenses = listOf<Expense>(
-//        Expense("1", "Mac", "01-01-2024", 234, comida),
-//        Expense("1", "Minecraft Premium", "01-03-2021", 20000, diversion),
-//        Expense("1", "Parque de la costa", "01-02-2021", 90000, diversion),
-//        Expense("1", "Cumple de Monke", "12-01-2004", 10000, salidas)
+//        Expense("1", "Mac", "01-01-2024", 234, "comida"),
+//        Expense("1", "Minecraft Premium", "01-03-2021", 20000, "diversion"),
+//        Expense("1", "Parque de la costa", "01-02-2021", 90000, "diversion"),
+//        Expense("1", "Cumple de Monke", "12-01-2004", 10000, "salidas")
 //    )
-    val expenses = listOf<Expense>(
-        Expense("1", "Mac", "01-01-2024", 234, "comida"),
-        Expense("1", "Minecraft Premium", "01-03-2021", 20000, "diversion"),
-        Expense("1", "Parque de la costa", "01-02-2021", 90000, "diversion"),
-        Expense("1", "Cumple de Monke", "12-01-2004", 10000, "salidas")
-    )
-
-    comida.spentAmount = 25000
-    diversion.spentAmount = 200000
-    val categories = listOf<Category>(
-        comida,
-        diversion,
-        salidas,
-        cumpleanios_de_urko,
-        otra_categoria,
-        steam
-    )
+//
+//    comida.spentAmount = 25000
+//    diversion.spentAmount = 200000
+//    val categories = listOf<Category>(
+//        comida,
+//        diversion,
+//        salidas,
+//        cumpleanios_de_urko,
+//        otra_categoria,
+//        steam
+//    )
 
     // ---------------------------- DATA ----------------------------------------
 
-    //val categories = homeScreenViewModel.sharedCategories
+    val categories = homeScreenViewModel.sharedCategories.value
 
     Scaffold (
         topBar = { HomeScreenTopBar(drawerProperties = drawerProperties) },
@@ -258,7 +251,10 @@ private fun AddExpenseHeadlineText() {
 }
 
 @Composable
-fun ShowCategories(categories: List<Category>) {
+fun ShowCategories(categories: List<Category>?) {
+    if(categories == null){
+        return
+    }
     Column(){
         CategoriesHeadlineText(Modifier.align(alignment = Alignment.CenterHorizontally))
         LazyColumn (contentPadding = PaddingValues(horizontal = 16.dp, vertical = 10.dp),
