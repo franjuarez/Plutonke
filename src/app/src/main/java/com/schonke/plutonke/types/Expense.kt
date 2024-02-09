@@ -1,8 +1,10 @@
 package com.schonke.plutonke.types
 
+import com.google.gson.annotations.SerializedName
+
 data class Expense(
-    val id: String,
-    val name: String,
-    val date: String,
-    val price: Int,
-    val category: String)
+    @SerializedName("id") val id: String,
+    @SerializedName("name") val name: String,
+    @SerializedName("date") val date: String,
+    @SerializedName("price") val price: Int,
+    @SerializedName("category") val category: String)

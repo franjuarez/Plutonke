@@ -1,14 +1,14 @@
 package com.schonke.plutonke.types
 
-class Category (
-    val id: String,
-    val name: String,
-    val maxAmount: Int,
-    //TODO: FALTA LO DE REINCIAR CADA X TIEMPO
+import com.google.gson.annotations.SerializedName
+
+data class Category (
+    @SerializedName("id") val id: String,
+    @SerializedName("name") val name: String,
+    @SerializedName("maxAmount") val maxAmount: Int,
+    @SerializedName("spentAmount") var spentAmount: Int
     )
 {
-    var spentAmount = 0
-
     override fun toString(): String {
         return name
     }

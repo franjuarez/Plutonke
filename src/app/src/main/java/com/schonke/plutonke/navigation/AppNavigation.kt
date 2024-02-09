@@ -34,7 +34,7 @@ private fun DrawerNavigation(dataViewModel: SharedDataViewModel) {
     val navHostController = rememberNavController()
 
     Drawer(navController = navHostController) { navController, drawerProperties ->
-        NavHost(navController = navController, startDestination = AppScreens.AllExpensesScreen.route) {
+        NavHost(navController = navController, startDestination = AppScreens.HomeScreen.route) {
                 composable(route = AppScreens.HomeScreen.route) {
                     HomeScreen(
                         navController = navController,
