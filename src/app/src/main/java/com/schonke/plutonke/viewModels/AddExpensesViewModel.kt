@@ -5,6 +5,7 @@ import androidx.annotation.RequiresApi
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.schonke.plutonke.types.Expense
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
@@ -30,7 +31,13 @@ class AddExpensesViewModel(private val dataViewModel: SharedDataViewModel) : Vie
     fun onConfirmPressed() : Boolean{
         if(isExpenseNameValid() && isExpenseDateValid() &&
             isExpensePriceValid() && isExpenseCategoryValid()){
-            //TODO: agregar gasto a bdd
+            //TODO: ver q onda ID y que la Category sea del tipo Category
+            val expense = Expense(
+                "59", expenseName.value!!,
+                expenseDate.value!!,
+                expensePrice.value!!.toInt(),
+                expenseCategory.value!!)
+            dataViewModel.addExpense(expense)
             return true
         }
         return false
