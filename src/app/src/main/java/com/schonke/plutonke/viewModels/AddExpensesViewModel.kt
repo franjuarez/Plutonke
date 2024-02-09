@@ -27,6 +27,13 @@ class AddExpensesViewModel(private val dataViewModel: SharedDataViewModel) : Vie
     private val _expenseCategory = MutableLiveData<String>()
     val expenseCategory : LiveData<String> = _expenseCategory
 
+    private fun resetExpense(){
+        _expenseName.value = ""
+        _expenseDate.value = ""
+        _expensePrice.value = ""
+        _expenseCategory.value = ""
+    }
+
     @RequiresApi(Build.VERSION_CODES.O)
     fun onConfirmPressed() : Boolean{
         if(isExpenseNameValid() && isExpenseDateValid() &&
@@ -37,7 +44,9 @@ class AddExpensesViewModel(private val dataViewModel: SharedDataViewModel) : Vie
                 expenseDate.value!!,
                 expensePrice.value!!.toInt(),
                 expenseCategory.value!!)
+
             dataViewModel.addExpense(expense)
+            resetExpense()
             return true
         }
         return false
