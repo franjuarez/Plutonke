@@ -50,19 +50,6 @@ class SharedDataViewModel() : ViewModel() {
         dataUpdated.postValue(!dataUpdated.value!!)
     }
 
-//    private fun changeCategorySpentAmount(categoryName: String, amount: Int) {
-//        val currentCategories = _sharedCategories.value ?: return
-//        val updatedCategories = currentCategories.map { category ->
-//            if (category.name == categoryName) {
-//                // Actualiza solo la propiedad que ha cambiado
-//                category.copy(spentAmount = category.spentAmount + amount)
-//            } else {
-//                category
-//            }
-//        }
-//        _sharedCategories.postValue(updatedCategories)
-//    }
-
 
     fun addExpense(expense: Expense){
         val expenses: MutableList<Expense> = (_sharedExpenses.value ?: mutableListOf()).toMutableList()

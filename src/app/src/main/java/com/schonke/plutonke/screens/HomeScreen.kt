@@ -180,7 +180,7 @@ private fun AddExpenseDismissButton(onDismiss: () -> Unit) {
         Text("Dismiss")
     }
 }
-
+//TODO: cambiar por menu desplegable con todos los expenses
 @Composable
 private fun AddExpenseCategoryField(expenseCategory: String, onValueChange: (String) -> Unit) {
     OutlinedTextField(

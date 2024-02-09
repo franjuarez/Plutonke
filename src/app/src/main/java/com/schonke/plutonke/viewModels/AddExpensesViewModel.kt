@@ -36,9 +36,13 @@ class AddExpensesViewModel(private val dataViewModel: SharedDataViewModel) : Vie
 
     @RequiresApi(Build.VERSION_CODES.O)
     fun onConfirmPressed() : Boolean{
+        //Chequear esto en back! Aca solo chequear que los campos no sean null
         if(isExpenseNameValid() && isExpenseDateValid() &&
             isExpensePriceValid() && isExpenseCategoryValid()){
             //TODO: ver q onda ID y que la Category sea del tipo Category
+            //Aca tendria que mandarle SOLO los datos del expense y que
+            //la funcion me devuelva el Expense creado con el ID que le
+            //devolvio el server
             val expense = Expense(
                 "59", expenseName.value!!,
                 expenseDate.value!!,
