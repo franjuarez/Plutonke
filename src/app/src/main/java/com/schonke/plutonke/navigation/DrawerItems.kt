@@ -38,7 +38,7 @@ val items = listOf(
         title = "Edit Categories",
         selectedIcon = Icons.Filled.Edit,
         unselectedIcon = Icons.Outlined.Edit,
-        route = AppScreens.ConfigurationScreen.route //TODO: No olvidaar de agregar en appnavigation
+        route = AppScreens.ConfigurationScreen.route
     ),
     NavigationItem(
         title = "Settings",

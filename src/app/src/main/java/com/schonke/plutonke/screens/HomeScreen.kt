@@ -28,15 +28,22 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.getValue
@@ -54,6 +61,7 @@ import androidx.navigation.NavController
 import com.schonke.plutonke.types.Category
 import com.schonke.plutonke.types.Expense
 import com.schonke.plutonke.navigation.DrawerProperties
+import com.schonke.plutonke.navigation.items
 import com.schonke.plutonke.viewModels.AddExpensesViewModel
 import com.schonke.plutonke.viewModels.HomeScreenViewModel
 import kotlinx.coroutines.launch
@@ -68,7 +76,7 @@ fun HomeScreen(navController: NavController, drawerProperties: DrawerProperties,
 
     Scaffold (
         topBar = { HomeScreenTopBar(drawerProperties = drawerProperties) },
-        floatingActionButton = { HomeScreenAddExpenseButton(addExpensesViewModel) }
+        floatingActionButton = { HomeScreenAddExpenseButton(addExpensesViewModel, categories) }
     )
     {innerPadding ->
         Box(modifier = Modifier.padding(innerPadding)){
@@ -99,7 +107,7 @@ fun HomeScreenTopBar(drawerProperties: DrawerProperties){
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun HomeScreenAddExpenseButton(addExpensesViewModel: AddExpensesViewModel) {
+fun HomeScreenAddExpenseButton(addExpensesViewModel: AddExpensesViewModel, categories: List<Category>?) {
     var isDialogVisible by remember { mutableStateOf(false) }
 
     ExtendedFloatingActionButton(
@@ -107,13 +115,16 @@ fun HomeScreenAddExpenseButton(addExpensesViewModel: AddExpensesViewModel) {
         icon = { Icon(Icons.Filled.Add, contentDescription = "Add an expense") },
         onClick = { isDialogVisible = true }
     )
-    AddExpenseDialog(addExpensesViewModel, isDialogVisible, onDismiss = { isDialogVisible = false })
+    AddExpenseDialog(addExpensesViewModel, categories, isDialogVisible, onDismiss = {
+        isDialogVisible = false
+        addExpensesViewModel.resetExpense()})
 }
 
 
-@RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun AddExpenseDialog(addExpensesViewModel: AddExpensesViewModel, isDialogVisible: Boolean, onDismiss: () -> Unit) {
+fun AddExpenseDialog(addExpensesViewModel: AddExpensesViewModel,
+                     categories: List<Category>?,
+                     isDialogVisible: Boolean, onDismiss: () -> Unit) {
 
     val expenseName :String by addExpensesViewModel.expenseName.observeAsState(initial = "")
     val expenseDate :String by addExpensesViewModel.expenseDate.observeAsState(initial = "")
@@ -131,7 +142,7 @@ fun AddExpenseDialog(addExpensesViewModel: AddExpensesViewModel, isDialogVisible
                     AddExpenseNameField(expenseName) { addExpensesViewModel.onNameChanged(it) }
                     AddExpensePriceField(expensePrice) { addExpensesViewModel.onPriceChanged(it) }
                     AddExpenseDateField(expenseDate) { addExpensesViewModel.onDateChanged(it) }
-                    AddExpenseCategoryField(expenseCategory) {
+                    AddExpenseCategoryField(expenseCategory, categories) {
                         addExpensesViewModel.onCategoryChanged(
                             it
                         )
@@ -180,14 +191,33 @@ private fun AddExpenseDismissButton(onDismiss: () -> Unit) {
         Text("Dismiss")
     }
 }
-//TODO: cambiar por menu desplegable con todos los expenses
 @Composable
-private fun AddExpenseCategoryField(expenseCategory: String, onValueChange: (String) -> Unit) {
-    OutlinedTextField(
-        value = expenseCategory,
-        onValueChange = { onValueChange(it) },
-        label = { Text("Category") }
-    )
+private fun AddExpenseCategoryField(expenseCategory: String, categories: List<Category>?, onValueChange: (String) -> Unit) {
+    var currentCategory by remember { mutableStateOf("Category") }
+    var isExpanded by remember { mutableStateOf(false) }
+    Box () {
+        ExposedDropdownMenuBox(expanded = isExpanded, onExpandedChange = { isExpanded = it }) {
+            TextField(value = currentCategory,
+                onValueChange = {},
+                readOnly = true,
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = isExpanded) },
+                colors = ExposedDropdownMenuDefaults.textFieldColors(),
+                modifier = Modifier.menuAnchor()
+            )
+
+            ExposedDropdownMenu(expanded = isExpanded, onDismissRequest = { isExpanded = false }) {
+                categories?.forEach { category ->
+                    val categoryName = category.toString()
+                    DropdownMenuItem(text = { Text(text = categoryName) },
+                    onClick = {
+                        currentCategory = categoryName
+                        onValueChange(categoryName)
+                        isExpanded = false
+                    })
+                }
+            }
+        }
+    }
 }
 
 @Composable

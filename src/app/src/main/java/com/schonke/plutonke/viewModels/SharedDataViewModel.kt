@@ -56,14 +56,14 @@ class SharedDataViewModel() : ViewModel() {
         expenses.add(expense)
         _sharedExpenses.value = expenses
         changeCategorySpentAmount(expense.category, expense.price)
-        //TODO:añadir al back y cambiar la spentAmount de la category
+        //TODO:Actualizar el back agregando expense ycambiando category
     }
 
     fun removeExpense(expense: Expense){
         val expenses: MutableList<Expense> = (_sharedExpenses.value ?: mutableListOf()).toMutableList()
         expenses.remove(expense)
         _sharedExpenses.value = expenses
-        //TODO: eliminar del back y cambiar la spentAmount de la category
+        //TODO: Actualizar el back borrando el expense y ¿cambiando category? O se puede hacer del back eso...MMM
     }
 
 }

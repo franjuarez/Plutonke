@@ -27,7 +27,7 @@ class AddExpensesViewModel(private val dataViewModel: SharedDataViewModel) : Vie
     private val _expenseCategory = MutableLiveData<String>()
     val expenseCategory : LiveData<String> = _expenseCategory
 
-    private fun resetExpense(){
+    fun resetExpense(){
         _expenseName.value = ""
         _expenseDate.value = ""
         _expensePrice.value = ""
@@ -73,12 +73,9 @@ class AddExpensesViewModel(private val dataViewModel: SharedDataViewModel) : Vie
     }
 
     fun onCategoryChanged(category: String) {
-        //TODO: chequear que sea una categoria que exista
-        //Estaria bueno hacer un dropdown en vez de que escriba lo que quiera
         _expenseCategory.value = category
     }
 
-    //TODO: mejorar mecanismo de chequeo de fecha (si se puede usar DatePicker)
     private fun isFormingValidDate(date: String) : Boolean{
         if(date.length > VALID_DATE_LENGTH){
             return false
