@@ -6,8 +6,6 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.schonke.plutonke.types.Expense
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter
 
 const val DATE_FORMAT = "dd/MM/yyyy"
 const val VALID_DATE_LENGTH = 10
@@ -34,19 +32,25 @@ class AddExpensesViewModel(private val dataViewModel: SharedDataViewModel) : Vie
         _expenseCategory.value = ""
     }
 
+    private fun expenseHasNoNullFields(): Boolean{
+        return !(_expenseName.value == null || _expensePrice.value == null ||
+                _expenseDate.value == null || _expenseCategory.value == null)
+    }
+
     @RequiresApi(Build.VERSION_CODES.O)
     fun onConfirmPressed() : Boolean{
-        //Chequear esto en back! Aca solo chequear que los campos no sean null
-        if(isExpenseNameValid() && isExpenseDateValid() &&
-            isExpensePriceValid() && isExpenseCategoryValid()){
+        if(expenseHasNoNullFields()){
             //TODO: ver q onda ID y que la Category sea del tipo Category
             //Aca tendria que mandarle SOLO los datos del expense y que
             //la funcion me devuelva el Expense creado con el ID que le
             //devolvio el server
+            val price = expensePrice.value!!.replace(",", ".")
+                .toFloatOrNull() ?: return false
             val expense = Expense(
-                "59", expenseName.value!!,
+                "0",
+                expenseName.value!!,
                 expenseDate.value!!,
-                expensePrice.value!!.toInt(),
+                price,
                 expenseCategory.value!!)
 
             dataViewModel.addExpense(expense)
@@ -67,7 +71,7 @@ class AddExpensesViewModel(private val dataViewModel: SharedDataViewModel) : Vie
     }
 
     fun onPriceChanged(price: String) {
-        if(isValidPrice(price)){
+        if(isFormingValidPrice(price)){
             _expensePrice.value = price
         }
     }
@@ -88,37 +92,37 @@ class AddExpensesViewModel(private val dataViewModel: SharedDataViewModel) : Vie
         return true
     }
 
-    private fun isExpenseNameValid() : Boolean{
-        if(_expenseName.value == null) return false
-        return _expenseName.value?.length!! > 0
-    }
+//    private fun isExpenseNameValid() : Boolean{
+//        if(_expenseName.value == null) return false
+//        return _expenseName.value?.length!! > 0
+//    }
+//
+//    @RequiresApi(Build.VERSION_CODES.O)
+//    private fun isExpenseDateValid() : Boolean{
+//        if(_expenseDate.value == null){
+//            return false
+//        }
+//        return try {
+//            val date = _expenseDate.value.toString()
+//            val formatter = DateTimeFormatter.ofPattern(DATE_FORMAT)
+//            val localDate = LocalDate.parse(date, formatter)
+//            !(!formatter.format(localDate).equals(date) || localDate > LocalDate.now())
+//        } catch (e: Exception) {
+//            false
+//        }
+//    }
+//
+//    private fun isExpensePriceValid() : Boolean{
+//        if(_expensePrice.value == null) return false
+//        return _expensePrice.value?.length!! > 0 && isValidPrice(_expensePrice.value.toString())
+//    }
+//
+//    private fun isExpenseCategoryValid() : Boolean{
+//        if(_expenseCategory.value == null) return false
+//        return _expenseCategory.value?.length!! > 0
+//    }
 
-    @RequiresApi(Build.VERSION_CODES.O)
-    private fun isExpenseDateValid() : Boolean{
-        if(_expenseDate.value == null){
-            return false
-        }
-        return try {
-            val date = _expenseDate.value.toString()
-            val formatter = DateTimeFormatter.ofPattern(DATE_FORMAT)
-            val localDate = LocalDate.parse(date, formatter)
-            !(!formatter.format(localDate).equals(date) || localDate > LocalDate.now())
-        } catch (e: Exception) {
-            false
-        }
-    }
-
-    private fun isExpensePriceValid() : Boolean{
-        if(_expensePrice.value == null) return false
-        return _expensePrice.value?.length!! > 0 && isValidPrice(_expensePrice.value.toString())
-    }
-
-    private fun isExpenseCategoryValid() : Boolean{
-        if(_expenseCategory.value == null) return false
-        return _expenseCategory.value?.length!! > 0
-    }
-
-    private fun isValidPrice(price: String) : Boolean{
+    private fun isFormingValidPrice(price: String) : Boolean{
         var isDecimal = false
         for(char in price){
             if(char == ','){

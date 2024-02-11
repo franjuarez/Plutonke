@@ -20,7 +20,7 @@ interface Backend {
 object BackendFactory {
 
     private val backend = Retrofit.Builder()
-        .baseUrl(SERVER_URL) //Para emulador
+        .baseUrl(SERVER_URL)
         .addConverterFactory(GsonConverterFactory.create())
         .build()
     fun getInstance(): Backend {
