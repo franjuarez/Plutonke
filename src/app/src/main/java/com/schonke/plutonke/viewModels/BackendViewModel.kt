@@ -30,4 +30,14 @@ class BackendViewModel : ViewModel() {
             throw IOException("Error fetching Categories! : ${call.errorBody()?.string()}")
         }
     }
+
+    suspend fun addExpense(expense: Expense): Expense?{
+        return withContext(Dispatchers.IO){
+            val call = backend.addExpense(expense)
+            if(call.isSuccessful){
+                return@withContext call.body()
+            }
+            return@withContext null
+        }
+    }
 }

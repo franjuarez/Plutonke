@@ -3,6 +3,7 @@
 package com.schonke.plutonke.screens
 
 import android.os.Build
+import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -52,6 +53,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
@@ -105,7 +107,6 @@ fun HomeScreenTopBar(drawerProperties: DrawerProperties){
     )
 }
 
-@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun HomeScreenAddExpenseButton(addExpensesViewModel: AddExpensesViewModel, categories: List<Category>?) {
     var isDialogVisible by remember { mutableStateOf(false) }
@@ -147,9 +148,12 @@ fun AddExpenseDialog(addExpensesViewModel: AddExpensesViewModel,
                             it
                         )
                     }
+                    val context = LocalContext.current
                     AddExpenseFinalizeButtons(onDismiss) {
                         if(addExpensesViewModel.onConfirmPressed()){
                             onDismiss()
+                        } else{
+                            Toast.makeText(context, "Invalid expense!", Toast.LENGTH_SHORT).show()
                         }
                     }
                 }

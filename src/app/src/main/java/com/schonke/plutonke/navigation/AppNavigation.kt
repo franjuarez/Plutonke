@@ -1,7 +1,9 @@
 package com.schonke.plutonke.navigation
 
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -11,6 +13,7 @@ import androidx.navigation.compose.rememberNavController
 import com.schonke.plutonke.screens.AllExpensesScreen
 import com.schonke.plutonke.screens.ConfigurationScreen
 import com.schonke.plutonke.screens.HomeScreen
+import com.schonke.plutonke.states.LoadMainDataState
 import com.schonke.plutonke.viewModels.AddExpensesViewModel
 import com.schonke.plutonke.viewModels.AllExpensesScreenViewModel
 import com.schonke.plutonke.viewModels.HomeScreenViewModel
@@ -19,14 +22,14 @@ import com.schonke.plutonke.viewModels.SharedDataViewModel
 @Composable
 fun AppNavigation() {
     val dataViewModel = viewModel<SharedDataViewModel>()
+    val data by dataViewModel.loadingState.collectAsState()
 
-    val isLoading by dataViewModel.isLoading.observeAsState(initial = true)
-
-    if (isLoading) {
-        LinearProgressIndicator()
-    } else {
-        DrawerNavigation(dataViewModel = dataViewModel)
+    when(data){
+        is LoadMainDataState.Loading -> LinearProgressIndicator()
+        is LoadMainDataState.Success -> { DrawerNavigation(dataViewModel = dataViewModel) }
+        is LoadMainDataState.Error -> Text(text = "Error: ${(data as LoadMainDataState.Error).msg}")
     }
+
 }
 
 @Composable

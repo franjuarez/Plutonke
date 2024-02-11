@@ -37,25 +37,21 @@ class AddExpensesViewModel(private val dataViewModel: SharedDataViewModel) : Vie
                 _expenseDate.value == null || _expenseCategory.value == null)
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
-    fun onConfirmPressed() : Boolean{
-        if(expenseHasNoNullFields()){
-            //TODO: ver q onda ID y que la Category sea del tipo Category
-            //Aca tendria que mandarle SOLO los datos del expense y que
-            //la funcion me devuelva el Expense creado con el ID que le
-            //devolvio el server
+    fun onConfirmPressed(): Boolean {
+        if (expenseHasNoNullFields()) {
             val price = expensePrice.value!!.replace(",", ".")
                 .toFloatOrNull() ?: return false
-            val expense = Expense(
-                "0",
+//            return true //SACAR
+            val valid = dataViewModel.addExpense(
                 expenseName.value!!,
                 expenseDate.value!!,
                 price,
-                expenseCategory.value!!)
-
-            dataViewModel.addExpense(expense)
-            resetExpense()
-            return true
+                expenseCategory.value!!
+            )
+            if (valid) {
+                resetExpense()
+                return true
+            }
         }
         return false
     }
