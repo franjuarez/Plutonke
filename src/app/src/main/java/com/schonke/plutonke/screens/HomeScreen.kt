@@ -135,22 +135,7 @@ fun AddExpenseDialog(addExpensesViewModel: AddExpensesViewModel,
     val expensePrice :String by addExpensesViewModel.expensePrice.observeAsState(initial = "")
     val expenseCategory :String by addExpensesViewModel.expenseCategory.observeAsState(initial = "")
 
-    val expenseValid by addExpensesViewModel.expenseValidState.collectAsState()
-
-    val context = LocalContext.current
-    when(expenseValid){
-        is LoadMainDataState.Loading -> {}
-        is LoadMainDataState.Success -> {
-            LaunchedEffect(Unit) {
-                Toast.makeText(context, "Expense added", Toast.LENGTH_SHORT).show()
-            }
-            onDismiss()
-        }
-        is LoadMainDataState.Error -> {
-            Toast.makeText(context, "Invalid expense!!", Toast.LENGTH_SHORT).show()
-            addExpensesViewModel.resetExpenseValidState()
-        }
-    }
+    ExpenseValidation(addExpensesViewModel, onDismiss)
 
     if(isDialogVisible) {
         Dialog(onDismissRequest = onDismiss) {
@@ -171,6 +156,30 @@ fun AddExpenseDialog(addExpensesViewModel: AddExpensesViewModel,
                     AddExpenseFinalizeButtons(onDismiss) { addExpensesViewModel.onConfirmPressed() }
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun ExpenseValidation(
+    addExpensesViewModel: AddExpensesViewModel,
+    onDismiss: () -> Unit
+) {
+    val expenseValid by addExpensesViewModel.expenseValidState.collectAsState()
+
+    val context = LocalContext.current
+    when (expenseValid) {
+        is LoadMainDataState.Loading -> {}
+        is LoadMainDataState.Success -> {
+            LaunchedEffect(Unit) {
+                Toast.makeText(context, "Expense added", Toast.LENGTH_SHORT).show()
+            }
+            onDismiss()
+        }
+
+        is LoadMainDataState.Error -> {
+            Toast.makeText(context, "Invalid expense!!", Toast.LENGTH_SHORT).show()
+            addExpensesViewModel.resetExpenseValidState()
         }
     }
 }
