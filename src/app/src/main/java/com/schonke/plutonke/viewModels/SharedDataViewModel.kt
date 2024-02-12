@@ -18,10 +18,12 @@ import kotlin.math.exp
 class SharedDataViewModel() : ViewModel() {
     private val backend = BackendViewModel()
 
+    val dataUpdated = MutableLiveData(false)
     private val _loadingState = MutableStateFlow<LoadMainDataState>(LoadMainDataState.Loading)
     val loadingState: StateFlow<LoadMainDataState> = _loadingState
 
-    val dataUpdated = MutableLiveData(false)
+    private val _expenseValidState = MutableStateFlow<LoadMainDataState>(LoadMainDataState.Loading)
+    val expenseValidState: StateFlow<LoadMainDataState> = _expenseValidState
 
     private val _sharedExpenses = MutableLiveData<List<Expense>?>(null)
     private val _sharedCategories = MutableLiveData<List<Category>?>(null)
@@ -55,18 +57,42 @@ class SharedDataViewModel() : ViewModel() {
         dataUpdated.postValue(!dataUpdated.value!!)
     }
 
-    fun addExpense(expenseName: String, expenseDate: String, expensePrice: Float, expenseCategory: String): Boolean{
-//        val expense =
-//            backend.addExpense(Expense("0", expenseName, expenseDate, expensePrice, expenseCategory))
-//                ?: return false
-        val expense = Expense("0", expenseName, expenseDate, expensePrice, expenseCategory)
-        val expenses: MutableList<Expense> = (_sharedExpenses.value ?: mutableListOf()).toMutableList()
-        expenses.add(expense)
-        _sharedExpenses.value = expenses
-        changeCategorySpentAmount(expense.category, expense.price)
-        return true
+    fun addExpense(expenseName: String, expenseDate: String, expensePrice: String, expenseCategory: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val price = expensePrice.replace(",", ".")
+                .toFloatOrNull()
+
+            if(price == null){
+                _expenseValidState.value = LoadMainDataState.Error("error") //TODO: errores descriptivos
+                return@launch
+            }
+
+            val expense =
+                backend.addExpense(
+                    Expense(
+                        "0",
+                        expenseName,
+                        expenseDate,
+                        price,
+                        expenseCategory
+                    )
+                )
+            if (expense == null){
+                _expenseValidState.value = LoadMainDataState.Error("error") //TODO: errores descriptivos
+            } else{
+                val expenses: MutableList<Expense> =
+                    (_sharedExpenses.value ?: mutableListOf()).toMutableList()
+                expenses.add(expense)
+                _sharedExpenses.postValue(expenses)
+                changeCategorySpentAmount(expense.category, expense.price)
+                _expenseValidState.value = LoadMainDataState.Success
+            }
+        }
     }
 
+    fun resetExpenseValidState(){
+        _expenseValidState.value = LoadMainDataState.Loading
+    }
     fun removeExpense(expense: Expense){
         val expenses: MutableList<Expense> = (_sharedExpenses.value ?: mutableListOf()).toMutableList()
         expenses.remove(expense)

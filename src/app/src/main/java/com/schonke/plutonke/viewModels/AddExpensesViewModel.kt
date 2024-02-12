@@ -5,7 +5,10 @@ import androidx.annotation.RequiresApi
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.schonke.plutonke.states.LoadMainDataState
 import com.schonke.plutonke.types.Expense
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 
 const val DATE_FORMAT = "dd/MM/yyyy"
 const val VALID_DATE_LENGTH = 10
@@ -25,11 +28,18 @@ class AddExpensesViewModel(private val dataViewModel: SharedDataViewModel) : Vie
     private val _expenseCategory = MutableLiveData<String>()
     val expenseCategory : LiveData<String> = _expenseCategory
 
+    val expenseValidState: StateFlow<LoadMainDataState> get() = dataViewModel.expenseValidState
+
     fun resetExpense(){
         _expenseName.value = ""
         _expenseDate.value = ""
         _expensePrice.value = ""
         _expenseCategory.value = ""
+        dataViewModel.resetExpenseValidState()
+    }
+
+    fun resetExpenseValidState(){
+        dataViewModel.resetExpenseValidState()
     }
 
     private fun expenseHasNoNullFields(): Boolean{
@@ -37,23 +47,15 @@ class AddExpensesViewModel(private val dataViewModel: SharedDataViewModel) : Vie
                 _expenseDate.value == null || _expenseCategory.value == null)
     }
 
-    fun onConfirmPressed(): Boolean {
+    fun onConfirmPressed() {
         if (expenseHasNoNullFields()) {
-            val price = expensePrice.value!!.replace(",", ".")
-                .toFloatOrNull() ?: return false
-//            return true //SACAR
-            val valid = dataViewModel.addExpense(
+            dataViewModel.addExpense(
                 expenseName.value!!,
                 expenseDate.value!!,
-                price,
+                expensePrice.value!!,
                 expenseCategory.value!!
             )
-            if (valid) {
-                resetExpense()
-                return true
-            }
         }
-        return false
     }
 
     fun onNameChanged(name: String) {

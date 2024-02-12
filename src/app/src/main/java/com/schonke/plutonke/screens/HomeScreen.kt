@@ -47,6 +47,8 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
@@ -64,6 +66,7 @@ import com.schonke.plutonke.types.Category
 import com.schonke.plutonke.types.Expense
 import com.schonke.plutonke.navigation.DrawerProperties
 import com.schonke.plutonke.navigation.items
+import com.schonke.plutonke.states.LoadMainDataState
 import com.schonke.plutonke.viewModels.AddExpensesViewModel
 import com.schonke.plutonke.viewModels.HomeScreenViewModel
 import kotlinx.coroutines.launch
@@ -132,6 +135,23 @@ fun AddExpenseDialog(addExpensesViewModel: AddExpensesViewModel,
     val expensePrice :String by addExpensesViewModel.expensePrice.observeAsState(initial = "")
     val expenseCategory :String by addExpensesViewModel.expenseCategory.observeAsState(initial = "")
 
+    val expenseValid by addExpensesViewModel.expenseValidState.collectAsState()
+
+    val context = LocalContext.current
+    when(expenseValid){
+        is LoadMainDataState.Loading -> {}
+        is LoadMainDataState.Success -> {
+            LaunchedEffect(Unit) {
+                Toast.makeText(context, "Expense added", Toast.LENGTH_SHORT).show()
+            }
+            onDismiss()
+        }
+        is LoadMainDataState.Error -> {
+            Toast.makeText(context, "Invalid expense!!", Toast.LENGTH_SHORT).show()
+            addExpensesViewModel.resetExpenseValidState()
+        }
+    }
+
     if(isDialogVisible) {
         Dialog(onDismissRequest = onDismiss) {
             Card() {
@@ -148,14 +168,7 @@ fun AddExpenseDialog(addExpensesViewModel: AddExpensesViewModel,
                             it
                         )
                     }
-                    val context = LocalContext.current
-                    AddExpenseFinalizeButtons(onDismiss) {
-                        if(addExpensesViewModel.onConfirmPressed()){
-                            onDismiss()
-                        } else{
-                            Toast.makeText(context, "Invalid expense!", Toast.LENGTH_SHORT).show()
-                        }
-                    }
+                    AddExpenseFinalizeButtons(onDismiss) { addExpensesViewModel.onConfirmPressed() }
                 }
             }
         }
