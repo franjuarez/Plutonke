@@ -2,9 +2,7 @@
 
 package com.schonke.plutonke.screens
 
-import android.os.Build
 import android.widget.Toast
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.material3.Scaffold
@@ -29,9 +27,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
-import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
@@ -41,7 +37,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
@@ -56,6 +51,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
@@ -63,9 +59,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
 
 import com.schonke.plutonke.types.Category
-import com.schonke.plutonke.types.Expense
 import com.schonke.plutonke.navigation.DrawerProperties
-import com.schonke.plutonke.navigation.items
 import com.schonke.plutonke.states.LoadMainDataState
 import com.schonke.plutonke.viewModels.AddExpensesViewModel
 import com.schonke.plutonke.viewModels.HomeScreenViewModel
@@ -85,7 +79,7 @@ fun HomeScreen(navController: NavController, drawerProperties: DrawerProperties,
     )
     {innerPadding ->
         Box(modifier = Modifier.padding(innerPadding)){
-            ShowCategories(categories = categories)
+            ShowCategories(categories = categories ?: emptyList())
         }
     }
 }
@@ -283,26 +277,43 @@ private fun AddExpenseHeadlineText() {
 }
 
 @Composable
-fun ShowCategories(categories: List<Category>?) {
-    if(categories == null){
-        return
-    }
-    Column(){
-        CategoriesHeadlineText(Modifier.align(alignment = Alignment.CenterHorizontally))
-        LazyColumn (contentPadding = PaddingValues(horizontal = 16.dp, vertical = 10.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            items(categories){ category ->
-                ShowCategory(category = category)
+fun ShowCategories(categories: List<Category>) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 6.dp),
+        ) {
+            CategoriesHeadlineText(Modifier.align(alignment = Alignment.CenterHorizontally))
+            Spacer(modifier = Modifier.height(8.dp))
+            if(categories.isEmpty()){
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ){
+                    Text(
+                        text = "No categories",
+                        color = Color(0xFF8a969c)
+                    )
+                }
+            } else {
+                LazyColumn(
+                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 10.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    items(categories) { category ->
+                        ShowCategory(category = category)
+                    }
+                }
             }
         }
-    }
 }
 
 @Composable
 private fun CategoriesHeadlineText(modifier: Modifier) {
     Text(
         text = "Spent by Categories", modifier = modifier
-            .padding(vertical = 4.dp)
+            .padding(vertical = 4.dp),
+        style = TextStyle(fontSize = 18.sp)
     )
 }
 

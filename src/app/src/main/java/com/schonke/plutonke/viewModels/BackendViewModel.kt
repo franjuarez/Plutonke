@@ -11,21 +11,21 @@ import java.io.IOException
 class BackendViewModel : ViewModel() {
     private val backend = BackendFactory.getInstance()
 
-    suspend fun fetchExpenses(): List<Expense>? {
+    suspend fun fetchExpenses(): List<Expense> {
         return withContext(Dispatchers.IO){
             val call = backend.getAllExpenses()
             if(call.isSuccessful){
-                return@withContext call.body()
+                return@withContext call.body() ?: emptyList()
             }
             throw IOException("Error fetching Expenses! : ${call.errorBody()?.string()}")
         }
     }
 
-    suspend fun fetchCategories(): List<Category>?{
+    suspend fun fetchCategories(): List<Category>{
         return withContext(Dispatchers.IO){
             val call = backend.getAllCategories()
             if(call.isSuccessful){
-                return@withContext call.body()
+                return@withContext call.body() ?: emptyList()
             }
             throw IOException("Error fetching Categories! : ${call.errorBody()?.string()}")
         }

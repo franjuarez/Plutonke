@@ -6,6 +6,6 @@ import com.schonke.plutonke.types.Category
 import com.schonke.plutonke.types.Expense
 
 class AllExpensesScreenViewModel(private val sharedViewModel: SharedDataViewModel) : ViewModel() {
-    val sharedExpenses: LiveData<List<Expense>?> get() = sharedViewModel.sharedExpenses
+    val sharedExpenses: LiveData<List<Expense>> get() = sharedViewModel.sharedExpenses
 
 }

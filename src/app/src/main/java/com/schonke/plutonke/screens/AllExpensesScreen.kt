@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentSize
@@ -29,26 +30,24 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.schonke.plutonke.types.Category
 import com.schonke.plutonke.types.Expense
 import com.schonke.plutonke.navigation.DrawerProperties
 import com.schonke.plutonke.viewModels.AllExpensesScreenViewModel
 import kotlinx.coroutines.launch
-import kotlin.math.exp
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun AllExpensesScreen(navController: NavController, drawerProperties: DrawerProperties, allExpensesScreenViewModel: AllExpensesScreenViewModel){
     val expenses = allExpensesScreenViewModel.sharedExpenses.value
-    println(expenses)
 
     Scaffold (topBar = { AllExpensesScreenTopBar(drawerProperties = drawerProperties) } ) { innerPadding ->
-        Box(modifier = Modifier.padding(innerPadding)){
-            showAllExpenses(expenses = expenses)
+        Box(modifier = Modifier.padding(innerPadding).fillMaxSize()){
+            ShowAllExpenses(expenses = expenses ?: emptyList())
         }
     }
 }
@@ -75,23 +74,31 @@ fun AllExpensesScreenTopBar(drawerProperties: DrawerProperties){
 }
 
 @Composable
-fun showAllExpenses(expenses: List<Expense>?){
-    if(expenses == null){
-        println("Natiii")
-        return
-    }
-    LazyColumn (contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-        verticalArrangement = Arrangement.spacedBy(4.dp),
-        modifier = Modifier.background(MaterialTheme.colorScheme.background)
-    ) {
-        items(expenses){ expense ->
-            showExpense(expense = expense)
+fun ShowAllExpenses(expenses: List<Expense>){
+    if(expenses.isEmpty()){
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ){
+            Text(
+                text = "No expenses!",
+                color = Color(0xFF8a969c)
+                )
+        }
+    } else{
+        LazyColumn (contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp),
+            modifier = Modifier.background(MaterialTheme.colorScheme.background)
+        ) {
+            items(expenses){ expense ->
+                ShowExpense(expense = expense)
+            }
         }
     }
 }
 
 @Composable
-fun showExpense(expense: Expense) {
+fun ShowExpense(expense: Expense) {
     ElevatedCard(
         shape = RoundedCornerShape(10.dp),
         modifier = Modifier.fillMaxWidth(),

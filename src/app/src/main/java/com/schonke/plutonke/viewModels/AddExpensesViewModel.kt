@@ -89,37 +89,6 @@ class AddExpensesViewModel(private val dataViewModel: SharedDataViewModel) : Vie
         }
         return true
     }
-
-//    private fun isExpenseNameValid() : Boolean{
-//        if(_expenseName.value == null) return false
-//        return _expenseName.value?.length!! > 0
-//    }
-//
-//    @RequiresApi(Build.VERSION_CODES.O)
-//    private fun isExpenseDateValid() : Boolean{
-//        if(_expenseDate.value == null){
-//            return false
-//        }
-//        return try {
-//            val date = _expenseDate.value.toString()
-//            val formatter = DateTimeFormatter.ofPattern(DATE_FORMAT)
-//            val localDate = LocalDate.parse(date, formatter)
-//            !(!formatter.format(localDate).equals(date) || localDate > LocalDate.now())
-//        } catch (e: Exception) {
-//            false
-//        }
-//    }
-//
-//    private fun isExpensePriceValid() : Boolean{
-//        if(_expensePrice.value == null) return false
-//        return _expensePrice.value?.length!! > 0 && isValidPrice(_expensePrice.value.toString())
-//    }
-//
-//    private fun isExpenseCategoryValid() : Boolean{
-//        if(_expenseCategory.value == null) return false
-//        return _expenseCategory.value?.length!! > 0
-//    }
-
     private fun isFormingValidPrice(price: String) : Boolean{
         var isDecimal = false
         for(char in price){
@@ -136,5 +105,4 @@ class AddExpensesViewModel(private val dataViewModel: SharedDataViewModel) : Vie
         }
         return true
     }
-
 }

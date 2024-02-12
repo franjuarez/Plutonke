@@ -25,10 +25,10 @@ class SharedDataViewModel() : ViewModel() {
     private val _expenseValidState = MutableStateFlow<LoadMainDataState>(LoadMainDataState.Loading)
     val expenseValidState: StateFlow<LoadMainDataState> = _expenseValidState
 
-    private val _sharedExpenses = MutableLiveData<List<Expense>?>(null)
-    private val _sharedCategories = MutableLiveData<List<Category>?>(null)
-    val sharedExpenses: MutableLiveData<List<Expense>?> get() = _sharedExpenses
-    val sharedCategories: MutableLiveData<List<Category>?> get() = _sharedCategories
+    private val _sharedExpenses = MutableLiveData<List<Expense>>(emptyList())
+    private val _sharedCategories = MutableLiveData<List<Category>>(emptyList())
+    val sharedExpenses: MutableLiveData<List<Expense>> get() = _sharedExpenses
+    val sharedCategories: MutableLiveData<List<Category>> get() = _sharedCategories
 
     private suspend fun loadData() {
         try {
