@@ -7,5 +7,5 @@ import com.schonke.plutonke.types.Expense
 
 class HomeScreenViewModel(private val sharedViewModel: SharedDataViewModel) : ViewModel() {
         val sharedCategories: LiveData<List<Category>> get() = sharedViewModel.sharedCategories
-        val dataUpdated: LiveData<Boolean> get() = sharedViewModel.dataUpdated
+        val dataUpdated: LiveData<Boolean> get() = sharedViewModel.dataUpdated //Ver que hacer con este
 }

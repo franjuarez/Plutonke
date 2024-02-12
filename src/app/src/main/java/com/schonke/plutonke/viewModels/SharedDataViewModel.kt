@@ -14,7 +14,7 @@ import java.io.IOException
 import java.lang.Exception
 import kotlin.math.exp
 
-class SharedDataViewModel() : ViewModel() {
+class SharedDataViewModel: ViewModel() {
     private val backend = BackendViewModel()
 
     val dataUpdated = MutableLiveData(false)

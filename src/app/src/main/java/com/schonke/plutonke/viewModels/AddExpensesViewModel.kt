@@ -11,18 +11,9 @@ import kotlinx.coroutines.flow.StateFlow
 const val VALID_DATE_LENGTH = 10
 const val DATE_TOKEN = '/'
 
-//Me parece que conviene hacer un EditExpenseViewModel que copie
-//todas las val de este pero que tenga en cuenta el gasto que se
-//esta modificando, capaz recibirlo por param, todas las funciones
-//de chequeo y eso las puedo sacara a un archivo utils. Ver que hacer
-//con el loading pq sino compartirian el mismo del mismo viewMOdel y es raro
-
-//Capaz el problema es el sharedDataViewModel, seguro conviene tener room
-//e ir haciendole request a esa bdd desde el view model actual, ahi me guardo
-//los datos de loading y eso, O CAPAZ TENER EL VALIDSTATE EN ESTE VIEWMODEL Y QUE
-// SE ENGANCHE Y LO MODIFIQUE EL SHARED?
-// . Repasar y si es mucho quilombo no hacer
-
+//Para UI -> Crearme un composable mio llamado ExpenseDialog
+//Para VM -> Crearme uno nuevo para EditAndDeleteViewModel que va a
+//recibir por parametro el gasto y poner en todas las val esos campos
 class AddExpensesViewModel(private val dataViewModel: SharedDataViewModel) : ViewModel() {
 
     private val _expenseName = MutableLiveData<String>()
@@ -49,7 +40,6 @@ class AddExpensesViewModel(private val dataViewModel: SharedDataViewModel) : Vie
     }
 
     fun resetExpenseValidState(){
-//        dataViewModel.resetExpenseValidState()
         _expenseValidState.value = LoadDataState.Loading
     }
 
