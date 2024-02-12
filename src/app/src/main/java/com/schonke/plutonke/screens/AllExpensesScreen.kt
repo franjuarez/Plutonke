@@ -46,7 +46,9 @@ fun AllExpensesScreen(navController: NavController, drawerProperties: DrawerProp
     val expenses = allExpensesScreenViewModel.sharedExpenses.value
 
     Scaffold (topBar = { AllExpensesScreenTopBar(drawerProperties = drawerProperties) } ) { innerPadding ->
-        Box(modifier = Modifier.padding(innerPadding).fillMaxSize()){
+        Box(modifier = Modifier
+            .padding(innerPadding)
+            .fillMaxSize()){
             ShowAllExpenses(expenses = expenses ?: emptyList())
         }
     }
@@ -97,6 +99,7 @@ fun ShowAllExpenses(expenses: List<Expense>){
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ShowExpense(expense: Expense) {
     ElevatedCard(
@@ -106,7 +109,8 @@ fun ShowExpense(expense: Expense) {
             contentColor = MaterialTheme.colorScheme.primary,
             disabledContentColor = MaterialTheme.colorScheme.secondary,
             disabledContainerColor = MaterialTheme.colorScheme.tertiary),
-        elevation = CardDefaults.cardElevation(defaultElevation = 5.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 5.dp),
+        onClick = { /*ModifyExpenseDialog(expense)*/ }
     ) {
         ListItem(
             headlineContent = { Box(modifier = Modifier, contentAlignment = Alignment.Center) {
@@ -125,10 +129,15 @@ fun ShowExpense(expense: Expense) {
                     modifier = Modifier.wrapContentSize(),
                     fontSize = 18.sp
                 )
-                Text(text = expense.date.toString(), fontSize = 12.sp)
+                Text(text = expense.date, fontSize = 12.sp)
             }
             },
-            colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.primaryContainer)
+            colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.primaryContainer),
         )
     }
 }
+
+//@Composable
+//fun ModifyExpenseDialog(expense: Expense) {
+//    return
+//}

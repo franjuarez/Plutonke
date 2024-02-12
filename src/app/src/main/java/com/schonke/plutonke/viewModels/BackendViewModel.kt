@@ -40,4 +40,13 @@ class BackendViewModel : ViewModel() {
             return@withContext null
         }
     }
+
+//    suspend fun editExpense(expense: Expense)
+
+    suspend fun deleteExpense(id: String): Boolean{
+        return withContext(Dispatchers.IO){
+            val call = backend.deleteExpense(id)
+            return@withContext call.isSuccessful
+        }
+    }
 }

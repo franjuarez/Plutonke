@@ -3,14 +3,13 @@ package com.schonke.plutonke.viewModels
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.schonke.plutonke.states.LoadMainDataState
+import com.schonke.plutonke.states.LoadDataState
 import com.schonke.plutonke.types.Category
 import com.schonke.plutonke.types.Expense
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.io.IOException
 import java.lang.Exception
 import kotlin.math.exp
@@ -19,11 +18,8 @@ class SharedDataViewModel() : ViewModel() {
     private val backend = BackendViewModel()
 
     val dataUpdated = MutableLiveData(false)
-    private val _loadingState = MutableStateFlow<LoadMainDataState>(LoadMainDataState.Loading)
-    val loadingState: StateFlow<LoadMainDataState> = _loadingState
-
-    private val _expenseValidState = MutableStateFlow<LoadMainDataState>(LoadMainDataState.Loading)
-    val expenseValidState: StateFlow<LoadMainDataState> = _expenseValidState
+    private val _loadingState = MutableStateFlow<LoadDataState>(LoadDataState.Loading)
+    val loadingState: StateFlow<LoadDataState> = _loadingState
 
     private val _sharedExpenses = MutableLiveData<List<Expense>>(emptyList())
     private val _sharedCategories = MutableLiveData<List<Category>>(emptyList())
@@ -32,14 +28,14 @@ class SharedDataViewModel() : ViewModel() {
 
     private suspend fun loadData() {
         try {
-            _loadingState.value = LoadMainDataState.Loading
+            _loadingState.value = LoadDataState.Loading
             val expenses = backend.fetchExpenses()
             val categories = backend.fetchCategories()
             _sharedExpenses.postValue(expenses)
             _sharedCategories.postValue(categories)
-            _loadingState.value = LoadMainDataState.Success
+            _loadingState.value = LoadDataState.Success
         } catch (error: IOException){
-            _loadingState.value = LoadMainDataState.Error(msg = "error fetching data: ${error.message}")
+            _loadingState.value = LoadDataState.Error(msg = "error fetching data: ${error.message}")
         }
     }
 
@@ -57,47 +53,45 @@ class SharedDataViewModel() : ViewModel() {
         dataUpdated.postValue(!dataUpdated.value!!)
     }
 
-    fun addExpense(expenseName: String, expenseDate: String, expensePrice: String, expenseCategory: String) {
+    fun addExpense(expense: Expense, isExpenseValid: MutableStateFlow<LoadDataState>) {
         viewModelScope.launch(Dispatchers.IO) {
-            val price = expensePrice.replace(",", ".")
-                .toFloatOrNull()
-
-            if(price == null){
-                _expenseValidState.value = LoadMainDataState.Error("error") //TODO: errores descriptivos
-                return@launch
-            }
-
-            val expense =
-                backend.addExpense(
-                    Expense(
-                        "0",
-                        expenseName,
-                        expenseDate,
-                        price,
-                        expenseCategory
-                    )
-                )
-            if (expense == null){
-                _expenseValidState.value = LoadMainDataState.Error("error") //TODO: errores descriptivos
+            val newExpense = backend.addExpense(expense)
+            if (newExpense == null){
+                isExpenseValid.value = LoadDataState.Error("could not add new expense") //TODO: errores descriptivos
             } else{
                 val expenses: MutableList<Expense> =
                     (_sharedExpenses.value ?: mutableListOf()).toMutableList()
-                expenses.add(expense)
+                expenses.add(newExpense)
                 _sharedExpenses.postValue(expenses)
-                changeCategorySpentAmount(expense.category, expense.price)
-                _expenseValidState.value = LoadMainDataState.Success
+                changeCategorySpentAmount(newExpense.category, newExpense.price)
+                isExpenseValid.value = LoadDataState.Success
             }
         }
     }
-
-    fun resetExpenseValidState(){
-        _expenseValidState.value = LoadMainDataState.Loading
-    }
-    fun removeExpense(expense: Expense){
-        val expenses: MutableList<Expense> = (_sharedExpenses.value ?: mutableListOf()).toMutableList()
-        expenses.remove(expense)
-        _sharedExpenses.value = expenses
-        //TODO: Actualizar el back borrando el expense y ¿cambiando category?
-    }
+//ver de meter early returns
+//    fun removeExpense(id: String){
+//        viewModelScope.launch(Dispatchers.IO) {
+//            val confirm = backend.deleteExpense(id)
+//            if (!confirm){
+//                _expenseValidState.value = LoadDataState.Error(
+//                    "Could not delete expense") //TODO: errores descriptivos
+//            } else{
+//                val expenses: MutableList<Expense> =
+//                    (_sharedExpenses.value ?: mutableListOf()).toMutableList()
+//                val expense = expenses.find { it.id == id } //search for  same id
+//                if(expense == null){
+//                    _expenseValidState.value = LoadDataState.Error(
+//                        "Could not delete expense; it doesnt exist") //TODO: errores descriptivos
+//                } else {
+//                    val category = expense.category
+//                    val price = expense.price * -1
+//                    expenses.remove(expense)
+//                    _sharedExpenses.postValue(expenses)
+//                    changeCategorySpentAmount(category, price)
+//                    _expenseValidState.value = LoadDataState.Success
+//                }
+//            }
+//        }
+//    }
 
 }

@@ -60,7 +60,7 @@ import androidx.navigation.NavController
 
 import com.schonke.plutonke.types.Category
 import com.schonke.plutonke.navigation.DrawerProperties
-import com.schonke.plutonke.states.LoadMainDataState
+import com.schonke.plutonke.states.LoadDataState
 import com.schonke.plutonke.viewModels.AddExpensesViewModel
 import com.schonke.plutonke.viewModels.HomeScreenViewModel
 import kotlinx.coroutines.launch
@@ -163,15 +163,15 @@ private fun ExpenseValidation(
 
     val context = LocalContext.current
     when (expenseValid) {
-        is LoadMainDataState.Loading -> {}
-        is LoadMainDataState.Success -> {
+        is LoadDataState.Loading -> {}
+        is LoadDataState.Success -> {
             LaunchedEffect(Unit) {
                 Toast.makeText(context, "Expense added", Toast.LENGTH_SHORT).show()
             }
             onDismiss()
         }
 
-        is LoadMainDataState.Error -> {
+        is LoadDataState.Error -> {
             Toast.makeText(context, "Invalid expense!!", Toast.LENGTH_SHORT).show()
             addExpensesViewModel.resetExpenseValidState()
         }
