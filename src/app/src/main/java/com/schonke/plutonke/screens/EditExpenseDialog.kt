@@ -19,9 +19,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -34,7 +32,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.schonke.plutonke.states.LoadDataState
 import com.schonke.plutonke.types.Category
-import com.schonke.plutonke.viewModels.AddExpensesViewModel
+import kotlin.math.exp
 
 @Composable
 fun EditExpenseDialog(
@@ -86,14 +84,12 @@ fun ExpenseValidation(
     when (expenseValidState) {
         is LoadDataState.Loading -> {}
         is LoadDataState.Success -> {
-            LaunchedEffect(Unit) {
-                Toast.makeText(context, "Expense added", Toast.LENGTH_SHORT).show()
-            }
+            Toast.makeText(context, expenseValidState.msg, Toast.LENGTH_SHORT).show()
             onDismiss()
         }
 
         is LoadDataState.Error -> {
-            Toast.makeText(context, "Invalid expense!!", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, expenseValidState.msg, Toast.LENGTH_SHORT).show()
             resetExpenseValidState()
         }
     }
@@ -104,17 +100,22 @@ private fun AddExpenseFinalizeButtons(
         showDeleteOption: Boolean = false,
         onDeletePressed: () -> Unit)
     {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth(),
-        horizontalArrangement = Arrangement.End,
-    ) {
-        AddExpenseDismissButton(onDismiss)
-        AddExpenseConfirmButton(onConfirm)
-        if(showDeleteOption){
-            AddExpenseDeleteButton(onDeletePressed)
+        Row(
+            modifier = Modifier
+                .fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            if (showDeleteOption) {
+                AddExpenseDeleteButton(onDeletePressed)
+            }
+            Row(
+                horizontalArrangement = Arrangement.End
+            ) {
+                AddExpenseDismissButton(onDismiss)
+                AddExpenseConfirmButton(onConfirm)
+            }
         }
-    }
 }
 
 @Composable
@@ -153,7 +154,7 @@ private fun AddExpenseDismissButton(onDismiss: () -> Unit) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun AddExpenseCategoryField(expenseCategory: String, categories: List<Category>?, onValueChange: (String) -> Unit) {
-    var currentCategory by remember { mutableStateOf("Category") }
+    var currentCategory by remember { mutableStateOf(if(expenseCategory.isEmpty()) "Category" else expenseCategory) }
     var isExpanded by remember { mutableStateOf(false) }
     Box () {
         ExposedDropdownMenuBox(expanded = isExpanded, onExpandedChange = { isExpanded = it }) {

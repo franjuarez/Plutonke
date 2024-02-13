@@ -13,7 +13,7 @@ import com.schonke.plutonke.screens.AllExpensesScreen
 import com.schonke.plutonke.screens.ConfigurationScreen
 import com.schonke.plutonke.screens.HomeScreen
 import com.schonke.plutonke.states.LoadDataState
-import com.schonke.plutonke.viewModels.AddExpensesViewModel
+import com.schonke.plutonke.viewModels.ExpensesViewModel
 import com.schonke.plutonke.viewModels.AllExpensesScreenViewModel
 import com.schonke.plutonke.viewModels.HomeScreenViewModel
 import com.schonke.plutonke.viewModels.SharedDataViewModel
@@ -41,7 +41,7 @@ private fun DrawerNavigation(dataViewModel: SharedDataViewModel) {
                         navController = navController,
                         drawerProperties = drawerProperties,
                         homeScreenViewModel = HomeScreenViewModel(dataViewModel),
-                        addExpensesViewModel = AddExpensesViewModel(dataViewModel)
+                        expensesViewModel = ExpensesViewModel(dataViewModel)
                     )
                 }
 
@@ -49,7 +49,8 @@ private fun DrawerNavigation(dataViewModel: SharedDataViewModel) {
                     AllExpensesScreen(
                         navController = navController,
                         drawerProperties = drawerProperties,
-                        allExpensesScreenViewModel = AllExpensesScreenViewModel(dataViewModel)
+                        allExpensesScreenViewModel = AllExpensesScreenViewModel(dataViewModel),
+                        expensesViewModel = ExpensesViewModel(dataViewModel)
                     )
                 }
 

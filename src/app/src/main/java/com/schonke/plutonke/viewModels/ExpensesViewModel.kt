@@ -7,31 +7,31 @@ import com.schonke.plutonke.states.LoadDataState
 import com.schonke.plutonke.types.Expense
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlin.math.exp
 
 const val VALID_DATE_LENGTH = 10
 const val DATE_TOKEN = '/'
 
-//Para UI -> Crearme un composable mio llamado ExpenseDialog
-//Para VM -> Crearme uno nuevo para EditAndDeleteViewModel que va a
-//recibir por parametro el gasto y poner en todas las val esos campos
-class AddExpensesViewModel(private val dataViewModel: SharedDataViewModel) : ViewModel() {
+class ExpensesViewModel(
+    private val dataViewModel: SharedDataViewModel,
+) : ViewModel() {
 
     private val _expenseName = MutableLiveData<String>()
-    val expenseName : LiveData<String> = _expenseName
+    val expenseName: LiveData<String> = _expenseName
 
     private val _expenseDate = MutableLiveData<String>()
-    val expenseDate : LiveData<String> = _expenseDate
+    val expenseDate: LiveData<String> = _expenseDate
 
     private val _expensePrice = MutableLiveData<String>()
-    val expensePrice : LiveData<String> = _expensePrice
+    val expensePrice: LiveData<String> = _expensePrice
 
     private val _expenseCategory = MutableLiveData<String>()
-    val expenseCategory : LiveData<String> = _expenseCategory
+    val expenseCategory: LiveData<String> = _expenseCategory
 
     private val _expenseValidState = MutableStateFlow<LoadDataState>(LoadDataState.Loading)
     val expenseValidState: StateFlow<LoadDataState> = _expenseValidState
 
-    fun resetExpense(){
+    fun resetExpense() {
         _expenseName.value = ""
         _expenseDate.value = ""
         _expensePrice.value = ""
@@ -39,11 +39,11 @@ class AddExpensesViewModel(private val dataViewModel: SharedDataViewModel) : Vie
         resetExpenseValidState()
     }
 
-    fun resetExpenseValidState(){
+    fun resetExpenseValidState() {
         _expenseValidState.value = LoadDataState.Loading
     }
 
-    private fun expenseHasNoNullFields(): Boolean{
+    private fun expenseHasNoNullFields(): Boolean {
         return !(_expenseName.value == null || _expensePrice.value == null ||
                 _expenseDate.value == null || _expenseCategory.value == null)
     }
@@ -51,12 +51,15 @@ class AddExpensesViewModel(private val dataViewModel: SharedDataViewModel) : Vie
     fun onConfirmPressed() {
         if (expenseHasNoNullFields()) {
             val price = expensePrice.value?.replace(",", ".")
-                ?.toFloatOrNull()!!
-            dataViewModel.addExpense( Expense("0",
-                expenseName.value!!,
-                expenseDate.value!!,
-                price,
-                expenseCategory.value!!), _expenseValidState
+                ?.toFloatOrNull() ?: 0.0f
+            dataViewModel.addExpense(
+                Expense(
+                    "0",
+                    expenseName.value!!,
+                    expenseDate.value!!,
+                    price,
+                    expenseCategory.value!!
+                ), _expenseValidState
             )
         }
     }
@@ -71,23 +74,23 @@ class AddExpensesViewModel(private val dataViewModel: SharedDataViewModel) : Vie
 //            )
 //        }
 //    }
-//
-//    fun onDeletePressed(expense: Expense){
-//        dataViewModel.removeExpense(expense.id)
-//    }
+
+    fun onDeletePressed(id: String){
+        dataViewModel.removeExpense(id, _expenseValidState)
+    }
 
     fun onNameChanged(name: String) {
         _expenseName.value = name
     }
 
     fun onDateChanged(date: String) {
-        if(isFormingValidDate(date)){
+        if (isFormingValidDate(date)) {
             _expenseDate.value = date
         }
     }
 
     fun onPriceChanged(price: String) {
-        if(isFormingValidPrice(price)){
+        if (isFormingValidPrice(price)) {
             _expensePrice.value = price
         }
     }
@@ -96,28 +99,29 @@ class AddExpensesViewModel(private val dataViewModel: SharedDataViewModel) : Vie
         _expenseCategory.value = category
     }
 
-    private fun isFormingValidDate(date: String) : Boolean{
-        if(date.length > VALID_DATE_LENGTH){
+    private fun isFormingValidDate(date: String): Boolean {
+        if (date.length > VALID_DATE_LENGTH) {
             return false
         }
-        for(char in date){
-            if(!(char.isDigit() || char == DATE_TOKEN)){
+        for (char in date) {
+            if (!(char.isDigit() || char == DATE_TOKEN)) {
                 return false
             }
         }
         return true
     }
-    private fun isFormingValidPrice(price: String) : Boolean{
+
+    private fun isFormingValidPrice(price: String): Boolean {
         var isDecimal = false
-        for(char in price){
-            if(char == ','){
-                if(isDecimal){
+        for (char in price) {
+            if (char == ',') {
+                if (isDecimal) {
                     return false
                 }
                 isDecimal = true
                 continue
             }
-            if(!char.isDigit()){
+            if (!char.isDigit()) {
                 return false
             }
         }

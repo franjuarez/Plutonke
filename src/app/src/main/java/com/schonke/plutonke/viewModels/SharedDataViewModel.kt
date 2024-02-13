@@ -33,7 +33,7 @@ class SharedDataViewModel: ViewModel() {
             val categories = backend.fetchCategories()
             _sharedExpenses.postValue(expenses)
             _sharedCategories.postValue(categories)
-            _loadingState.value = LoadDataState.Success
+            _loadingState.value = LoadDataState.Success("Data loaded")
         } catch (error: IOException){
             _loadingState.value = LoadDataState.Error(msg = "error fetching data: ${error.message}")
         }
@@ -64,34 +64,34 @@ class SharedDataViewModel: ViewModel() {
                 expenses.add(newExpense)
                 _sharedExpenses.postValue(expenses)
                 changeCategorySpentAmount(newExpense.category, newExpense.price)
-                isExpenseValid.value = LoadDataState.Success
+                isExpenseValid.value = LoadDataState.Success("Expense added")
             }
         }
     }
 //ver de meter early returns
-//    fun removeExpense(id: String){
-//        viewModelScope.launch(Dispatchers.IO) {
-//            val confirm = backend.deleteExpense(id)
-//            if (!confirm){
-//                _expenseValidState.value = LoadDataState.Error(
-//                    "Could not delete expense") //TODO: errores descriptivos
-//            } else{
-//                val expenses: MutableList<Expense> =
-//                    (_sharedExpenses.value ?: mutableListOf()).toMutableList()
-//                val expense = expenses.find { it.id == id } //search for  same id
-//                if(expense == null){
-//                    _expenseValidState.value = LoadDataState.Error(
-//                        "Could not delete expense; it doesnt exist") //TODO: errores descriptivos
-//                } else {
-//                    val category = expense.category
-//                    val price = expense.price * -1
-//                    expenses.remove(expense)
-//                    _sharedExpenses.postValue(expenses)
-//                    changeCategorySpentAmount(category, price)
-//                    _expenseValidState.value = LoadDataState.Success
-//                }
-//            }
-//        }
-//    }
+    fun removeExpense(id: String, isExpenseValid: MutableStateFlow<LoadDataState>){
+        viewModelScope.launch(Dispatchers.IO) {
+            val confirm = backend.deleteExpense(id)
+            if (!confirm){
+                isExpenseValid.value = LoadDataState.Error(
+                    "Could not delete expense")
+            } else{
+                val expenses: MutableList<Expense> =
+                    (_sharedExpenses.value ?: mutableListOf()).toMutableList()
+                val expense = expenses.find { it.id == id } //search for  same id
+                if(expense == null){
+                    isExpenseValid.value = LoadDataState.Error(
+                        "Could not delete expense, it does not exist")
+                } else {
+                    val category = expense.category
+                    val price = expense.price * -1
+                    expenses.remove(expense)
+                    _sharedExpenses.postValue(expenses)
+                    changeCategorySpentAmount(category, price)
+                    isExpenseValid.value = LoadDataState.Success("Expense delated")
+                }
+            }
+        }
+    }
 
 }

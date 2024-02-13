@@ -28,6 +28,13 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -37,26 +44,58 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.schonke.plutonke.types.Expense
 import com.schonke.plutonke.navigation.DrawerProperties
+import com.schonke.plutonke.types.Category
 import com.schonke.plutonke.viewModels.AllExpensesScreenViewModel
+import com.schonke.plutonke.viewModels.ExpensesViewModel
 import kotlinx.coroutines.launch
+import kotlin.math.exp
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun AllExpensesScreen(navController: NavController, drawerProperties: DrawerProperties, allExpensesScreenViewModel: AllExpensesScreenViewModel){
+fun AllExpensesScreen(
+    navController: NavController,
+    drawerProperties: DrawerProperties,
+    allExpensesScreenViewModel: AllExpensesScreenViewModel,
+    expensesViewModel: ExpensesViewModel
+) {
     val expenses = allExpensesScreenViewModel.sharedExpenses.value
+    val categories = allExpensesScreenViewModel.sharedCategories.value
 
-    Scaffold (topBar = { AllExpensesScreenTopBar(drawerProperties = drawerProperties) } ) { innerPadding ->
-        Box(modifier = Modifier
-            .padding(innerPadding)
-            .fillMaxSize()){
-            ShowAllExpenses(expenses = expenses ?: emptyList())
+    val dataUpdated by allExpensesScreenViewModel.dataUpdated.observeAsState()
+
+    if (dataUpdated == true) {/*For recomposition*/
+    }
+
+    var isDialogVisible by remember { mutableStateOf(false) }
+    var selectedExpense by remember { mutableStateOf<Expense?>(null) }
+    Scaffold(topBar = { AllExpensesScreenTopBar(drawerProperties = drawerProperties) }) { innerPadding ->
+        Box(
+            modifier = Modifier
+                .padding(innerPadding)
+                .fillMaxSize()
+        ) {
+            if (isDialogVisible) {
+                EditExpenseOnClickDialog(
+                    expensesViewModel,
+                    selectedExpense!!,
+                    onDismiss = {
+                        isDialogVisible = false
+                        expensesViewModel.resetExpense()
+                    },
+                    categories ?: emptyList()
+                )
+            }
+            ShowAllExpenses(expenses ?: emptyList()) { clickedExpense ->
+                selectedExpense = clickedExpense
+                isDialogVisible = true
+            }
         }
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AllExpensesScreenTopBar(drawerProperties: DrawerProperties){
+fun AllExpensesScreenTopBar(drawerProperties: DrawerProperties) {
     TopAppBar(
         title = { Text(text = "All Expenses") },
         colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background),
@@ -70,30 +109,67 @@ fun AllExpensesScreenTopBar(drawerProperties: DrawerProperties){
                     imageVector = Icons.Default.Menu,
                     contentDescription = "Menu"
                 )
-            }}
+            }
+        }
     )
 
 }
 
 @Composable
-fun ShowAllExpenses(expenses: List<Expense>){
-    if(expenses.isEmpty()){
+fun EditExpenseOnClickDialog(
+    expensesViewModel: ExpensesViewModel,
+    selectedExpense: Expense,
+    onDismiss: () -> Unit,
+    categories: List<Category>
+) {
+    val expenseName: String by expensesViewModel.expenseName.observeAsState(initial = selectedExpense.name)
+    val expenseDate: String by expensesViewModel.expenseDate.observeAsState(initial = selectedExpense.date)
+    val expensePrice: String by expensesViewModel.expensePrice.observeAsState(initial = selectedExpense.price.toString())
+    val expenseCategory: String by expensesViewModel.expenseCategory.observeAsState(initial = selectedExpense.category)
+    val expenseValid by expensesViewModel.expenseValidState.collectAsState()
+
+    EditExpenseDialog(
+        title = "Edit an expense",
+        categories = categories,
+        expenseName = expenseName,
+        expensePrice = expensePrice,
+        expenseDate = expenseDate,
+        expenseCategory = expenseCategory,
+        onNameChanged = { expensesViewModel.onNameChanged(it) },
+        onPriceChanged = { expensesViewModel.onPriceChanged(it) },
+        onDateChanged = { expensesViewModel.onDateChanged(it) },
+        onCategoryChanged = { expensesViewModel.onCategoryChanged(it) },
+        onConfirmPressed = {
+            expensesViewModel.onConfirmPressed() //Todo: cambiar a edit
+        },
+        showDeleteOption = true,
+        onDeletePressed = { expensesViewModel.onDeletePressed(selectedExpense.id) },
+        onDismiss = { onDismiss() },
+        expenseValidState = expenseValid,
+        resetExpenseValidState = { expensesViewModel.resetExpenseValidState() }
+    )
+}
+
+@Composable
+fun ShowAllExpenses(expenses: List<Expense>, onExpenseClick: (Expense) -> Unit) {
+    if (expenses.isEmpty()) {
         Box(
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center
-        ){
+        ) {
             Text(
                 text = "No expenses!",
                 color = Color(0xFF8a969c)
-                )
+            )
         }
-    } else{
-        LazyColumn (contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+    } else {
+        LazyColumn(
+            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(4.dp),
             modifier = Modifier.background(MaterialTheme.colorScheme.background)
         ) {
-            items(expenses){ expense ->
-                ShowExpense(expense = expense)
+            items(expenses) { expense ->
+                ShowExpense(expense, onExpenseClick)
             }
         }
     }
@@ -101,20 +177,25 @@ fun ShowAllExpenses(expenses: List<Expense>){
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ShowExpense(expense: Expense) {
+fun ShowExpense(expense: Expense, onExpenseClick: (Expense) -> Unit) {
     ElevatedCard(
         shape = RoundedCornerShape(10.dp),
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.background,
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.background,
             contentColor = MaterialTheme.colorScheme.primary,
             disabledContentColor = MaterialTheme.colorScheme.secondary,
-            disabledContainerColor = MaterialTheme.colorScheme.tertiary),
+            disabledContainerColor = MaterialTheme.colorScheme.tertiary
+        ),
         elevation = CardDefaults.cardElevation(defaultElevation = 5.dp),
-        onClick = { /*ModifyExpenseDialog(expense)*/ }
+        onClick = { onExpenseClick(expense) }
     ) {
         ListItem(
-            headlineContent = { Box(modifier = Modifier, contentAlignment = Alignment.Center) {
-                Text(text = expense.name, fontSize = 15.sp) } },
+            headlineContent = {
+                Box(modifier = Modifier, contentAlignment = Alignment.Center) {
+                    Text(text = expense.name, fontSize = 15.sp)
+                }
+            },
             supportingContent = {
                 Text(
                     text = expense.category.toString(),
@@ -122,22 +203,23 @@ fun ShowExpense(expense: Expense) {
                     fontSize = 12.sp, fontWeight = FontWeight.ExtraBold
                 )
             },
-            trailingContent = { Column {
-                Text(
-                    text = "$" + expense.price.toString(),
-                    color = MaterialTheme.colorScheme.onPrimaryContainer,
-                    modifier = Modifier.wrapContentSize(),
-                    fontSize = 18.sp
-                )
-                Text(text = expense.date, fontSize = 12.sp)
-            }
+            trailingContent = {
+                Column {
+                    Text(
+                        text = "$" + expense.price.toString(),
+                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                        modifier = Modifier.wrapContentSize(),
+                        fontSize = 18.sp
+                    )
+                    Text(text = expense.date, fontSize = 12.sp)
+                }
             },
             colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.primaryContainer),
         )
     }
 }
 
-//@Composable
-//fun ModifyExpenseDialog(expense: Expense) {
-//    return
-//}
+@Composable
+fun ModifyExpenseDialog(expense: Expense) {
+    return
+}

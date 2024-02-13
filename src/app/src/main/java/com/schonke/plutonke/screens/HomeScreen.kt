@@ -2,7 +2,6 @@
 
 package com.schonke.plutonke.screens
 
-import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.material3.Scaffold
@@ -23,26 +22,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material3.Card
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
@@ -50,24 +40,19 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
 
 import com.schonke.plutonke.types.Category
 import com.schonke.plutonke.navigation.DrawerProperties
-import com.schonke.plutonke.states.LoadDataState
-import com.schonke.plutonke.viewModels.AddExpensesViewModel
+import com.schonke.plutonke.viewModels.ExpensesViewModel
 import com.schonke.plutonke.viewModels.HomeScreenViewModel
 import kotlinx.coroutines.launch
-import kotlin.math.exp
 
 @Composable
-fun HomeScreen(navController: NavController, drawerProperties: DrawerProperties, homeScreenViewModel: HomeScreenViewModel, addExpensesViewModel: AddExpensesViewModel) {
+fun HomeScreen(navController: NavController, drawerProperties: DrawerProperties, homeScreenViewModel: HomeScreenViewModel, expensesViewModel: ExpensesViewModel) {
     val categories by homeScreenViewModel.sharedCategories.observeAsState()
     val dataUpdated by homeScreenViewModel.dataUpdated.observeAsState()
 
@@ -76,7 +61,7 @@ fun HomeScreen(navController: NavController, drawerProperties: DrawerProperties,
 
     Scaffold (
         topBar = { HomeScreenTopBar(drawerProperties = drawerProperties) },
-        floatingActionButton = { HomeScreenAddExpenseButton(addExpensesViewModel, categories) }
+        floatingActionButton = { HomeScreenAddExpenseButton(expensesViewModel, categories) }
     )
     {innerPadding ->
         Box(modifier = Modifier.padding(innerPadding)){
@@ -106,7 +91,7 @@ fun HomeScreenTopBar(drawerProperties: DrawerProperties){
 }
 
 @Composable
-fun HomeScreenAddExpenseButton(addExpensesViewModel: AddExpensesViewModel, categories: List<Category>?) {
+fun HomeScreenAddExpenseButton(expensesViewModel: ExpensesViewModel, categories: List<Category>?) {
     var isDialogVisible by remember { mutableStateOf(false) }
 
     ExtendedFloatingActionButton(
@@ -115,11 +100,11 @@ fun HomeScreenAddExpenseButton(addExpensesViewModel: AddExpensesViewModel, categ
         onClick = { isDialogVisible = true }
     )
 
-    val expenseName: String by addExpensesViewModel.expenseName.observeAsState(initial = "")
-    val expenseDate: String by addExpensesViewModel.expenseDate.observeAsState(initial = "")
-    val expensePrice: String by addExpensesViewModel.expensePrice.observeAsState(initial = "")
-    val expenseCategory: String by addExpensesViewModel.expenseCategory.observeAsState(initial = "")
-    val expenseValid by addExpensesViewModel.expenseValidState.collectAsState()
+    val expenseName: String by expensesViewModel.expenseName.observeAsState(initial = "")
+    val expenseDate: String by expensesViewModel.expenseDate.observeAsState(initial = "")
+    val expensePrice: String by expensesViewModel.expensePrice.observeAsState(initial = "")
+    val expenseCategory: String by expensesViewModel.expenseCategory.observeAsState(initial = "")
+    val expenseValid by expensesViewModel.expenseValidState.collectAsState()
 
     if (isDialogVisible) {
         EditExpenseDialog(
@@ -129,19 +114,19 @@ fun HomeScreenAddExpenseButton(addExpensesViewModel: AddExpensesViewModel, categ
             expenseDate = expenseDate,
             expenseCategory = expenseCategory,
             categories = categories,
-            onNameChanged = { addExpensesViewModel.onNameChanged(it) },
-            onPriceChanged = { addExpensesViewModel.onPriceChanged(it) },
-            onDateChanged = { addExpensesViewModel.onDateChanged(it) },
-            onCategoryChanged = { addExpensesViewModel.onCategoryChanged(it) },
+            onNameChanged = { expensesViewModel.onNameChanged(it) },
+            onPriceChanged = { expensesViewModel.onPriceChanged(it) },
+            onDateChanged = { expensesViewModel.onDateChanged(it) },
+            onCategoryChanged = { expensesViewModel.onCategoryChanged(it) },
             onConfirmPressed = {
-                addExpensesViewModel.onConfirmPressed()
+                expensesViewModel.onConfirmPressed()
             },
             onDismiss = {
                 isDialogVisible = false
-                addExpensesViewModel.resetExpense()
+                expensesViewModel.resetExpense()
             },
             expenseValidState = expenseValid,
-            resetExpenseValidState = { addExpensesViewModel.resetExpenseValidState() }
+            resetExpenseValidState = { expensesViewModel.resetExpenseValidState() }
         )
 }
 }
