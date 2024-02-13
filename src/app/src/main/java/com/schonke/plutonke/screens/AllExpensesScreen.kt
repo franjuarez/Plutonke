@@ -122,10 +122,16 @@ fun EditExpenseOnClickDialog(
     onDismiss: () -> Unit,
     categories: List<Category>
 ) {
-    val expenseName: String by expensesViewModel.expenseName.observeAsState(initial = selectedExpense.name)
-    val expenseDate: String by expensesViewModel.expenseDate.observeAsState(initial = selectedExpense.date)
-    val expensePrice: String by expensesViewModel.expensePrice.observeAsState(initial = selectedExpense.price.toString())
-    val expenseCategory: String by expensesViewModel.expenseCategory.observeAsState(initial = selectedExpense.category)
+    val expenseDate: String by expensesViewModel.expenseDate.observeAsState(initial = "")
+    val expenseName: String by expensesViewModel.expenseName.observeAsState(initial = "")
+    val expensePrice: String by expensesViewModel.expensePrice.observeAsState(initial = "")
+    val expenseCategory: String by expensesViewModel.expenseCategory.observeAsState(initial = "")
+
+    expensesViewModel.onNameChanged(expenseName)
+    expensesViewModel.onDateChanged(expenseDate)
+    expensesViewModel.onPriceChanged(expensePrice)
+    expensesViewModel.onCategoryChanged(expenseCategory)
+
     val expenseValid by expensesViewModel.expenseValidState.collectAsState()
 
     EditExpenseDialog(
@@ -140,7 +146,8 @@ fun EditExpenseOnClickDialog(
         onDateChanged = { expensesViewModel.onDateChanged(it) },
         onCategoryChanged = { expensesViewModel.onCategoryChanged(it) },
         onConfirmPressed = {
-            expensesViewModel.onConfirmPressed() //Todo: cambiar a edit
+            expensesViewModel.onModifiedPressed(selectedExpense.id) //Todo: cambiar a edit
+            onDismiss()
         },
         showDeleteOption = true,
         onDeletePressed = { expensesViewModel.onDeletePressed(selectedExpense.id) },

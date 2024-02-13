@@ -12,7 +12,7 @@ import retrofit2.http.PUT
 import retrofit2.http.Path
 
 const val SERVER_URL = "http://10.0.2.2:8080/"  //Para emulador
-//const val SERVER_URL = "http://192.168.0.161:8080/" //Para celular
+//const val SERVER_URL = "http://192.168.1.2:8080/" //Para celular
 
 interface Backend {
     @GET("expenses")

@@ -7,6 +7,7 @@ import com.schonke.plutonke.states.LoadDataState
 import com.schonke.plutonke.types.Expense
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import java.io.IOException
 import kotlin.math.exp
 
 const val VALID_DATE_LENGTH = 10
@@ -64,18 +65,29 @@ class ExpensesViewModel(
         }
     }
 
-//    fun onModifiedPressed(id: String){
-//        if (expenseHasNoNullFields()){
-//            dataViewModel.editExpense( Expense(id,
-//                expenseName.value!!,
-//                expenseDate.value!!,
-//                price,
-//                expenseCategory.value!!)
-//            )
-//        }
-//    }
+    fun onModifiedPressed(id: String) {
+        println(_expenseName.value)
+        println(_expensePrice.value)
+        println(_expenseDate.value)
+        println(_expenseCategory.value)
 
-    fun onDeletePressed(id: String){
+        if (expenseHasNoNullFields()) {
+            val price = expensePrice.value?.replace(",", ".")
+                ?.toFloatOrNull() ?: 0.0f
+            dataViewModel.modifyExpense(
+                id,
+                Expense(
+                    id, expenseName.value!!,
+                    expenseDate.value!!,
+                    price,
+                    expenseCategory.value!!
+                ),
+                _expenseValidState
+            )
+        }
+    }
+
+    fun onDeletePressed(id: String) {
         dataViewModel.removeExpense(id, _expenseValidState)
     }
 
@@ -114,7 +126,7 @@ class ExpensesViewModel(
     private fun isFormingValidPrice(price: String): Boolean {
         var isDecimal = false
         for (char in price) {
-            if (char == ',') {
+            if (char == ',' || char == '.') {
                 if (isDecimal) {
                     return false
                 }
