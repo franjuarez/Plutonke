@@ -171,8 +171,8 @@ fun ShowAllExpenses(expenses: List<Expense>, onExpenseClick: (Expense) -> Unit) 
         }
     } else {
         LazyColumn(
-            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp),
+            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp),
+            verticalArrangement = Arrangement.spacedBy(2.dp),
             modifier = Modifier.background(MaterialTheme.colorScheme.background)
         ) {
             items(expenses) { expense ->
@@ -187,27 +187,27 @@ fun ShowAllExpenses(expenses: List<Expense>, onExpenseClick: (Expense) -> Unit) 
 fun ShowExpense(expense: Expense, onExpenseClick: (Expense) -> Unit) {
     ElevatedCard(
         shape = RoundedCornerShape(10.dp),
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().padding(vertical =  5.dp), // Agrega padding vertical para hacer más grande el Card
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.background,
             contentColor = MaterialTheme.colorScheme.primary,
             disabledContentColor = MaterialTheme.colorScheme.secondary,
             disabledContainerColor = MaterialTheme.colorScheme.tertiary
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 5.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation =  5.dp),
         onClick = { onExpenseClick(expense) }
     ) {
         ListItem(
             headlineContent = {
                 Box(modifier = Modifier, contentAlignment = Alignment.Center) {
-                    Text(text = expense.name, fontSize = 15.sp)
+                    Text(text = expense.name, fontSize =  18.sp) // Aumenta el tamaño de la fuente
                 }
             },
             supportingContent = {
                 Text(
                     text = expense.category.toString(),
                     modifier = Modifier.wrapContentSize(),
-                    fontSize = 12.sp, fontWeight = FontWeight.ExtraBold
+                    fontSize =  14.sp, fontWeight = FontWeight.ExtraBold // Aumenta el tamaño de la fuente
                 )
             },
             trailingContent = {
@@ -216,9 +216,9 @@ fun ShowExpense(expense: Expense, onExpenseClick: (Expense) -> Unit) {
                         text = "$" + expense.price.toString(),
                         color = MaterialTheme.colorScheme.onPrimaryContainer,
                         modifier = Modifier.wrapContentSize(),
-                        fontSize = 18.sp
+                        fontSize =  20.sp // Aumenta el tamaño de la fuente
                     )
-                    Text(text = expense.date, fontSize = 12.sp)
+                    Text(text = expense.date, fontSize =  14.sp) // Aumenta el tamaño de la fuente
                 }
             },
             colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.primaryContainer),
@@ -226,7 +226,3 @@ fun ShowExpense(expense: Expense, onExpenseClick: (Expense) -> Unit) {
     }
 }
 
-@Composable
-fun ModifyExpenseDialog(expense: Expense) {
-    return
-}

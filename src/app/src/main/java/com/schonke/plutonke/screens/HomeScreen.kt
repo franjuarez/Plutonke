@@ -52,19 +52,25 @@ import com.schonke.plutonke.viewModels.HomeScreenViewModel
 import kotlinx.coroutines.launch
 
 @Composable
-fun HomeScreen(navController: NavController, drawerProperties: DrawerProperties, homeScreenViewModel: HomeScreenViewModel, expensesViewModel: ExpensesViewModel) {
+fun HomeScreen(
+    navController: NavController,
+    drawerProperties: DrawerProperties,
+    homeScreenViewModel: HomeScreenViewModel,
+    expensesViewModel: ExpensesViewModel
+) {
     val categories by homeScreenViewModel.sharedCategories.observeAsState()
     val dataUpdated by homeScreenViewModel.dataUpdated.observeAsState()
 
-    if(dataUpdated == true){/*For recomposition*/ }
+    if (dataUpdated == true) {/*For recomposition*/
+    }
 
 
-    Scaffold (
+    Scaffold(
         topBar = { HomeScreenTopBar(drawerProperties = drawerProperties) },
         floatingActionButton = { HomeScreenAddExpenseButton(expensesViewModel, categories) }
     )
-    {innerPadding ->
-        Box(modifier = Modifier.padding(innerPadding)){
+    { innerPadding ->
+        Box(modifier = Modifier.padding(innerPadding)) {
             ShowCategories(categories = categories ?: emptyList())
         }
     }
@@ -72,9 +78,9 @@ fun HomeScreen(navController: NavController, drawerProperties: DrawerProperties,
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreenTopBar(drawerProperties: DrawerProperties){
+fun HomeScreenTopBar(drawerProperties: DrawerProperties) {
     TopAppBar(
-        title = { Text(text = "Plutonke 🤑 🤑 🤑")},
+        title = { Text(text = "Plutonke 🤑 🤑 🤑") },
         colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background),
         navigationIcon = {
             IconButton(onClick = {
@@ -86,7 +92,8 @@ fun HomeScreenTopBar(drawerProperties: DrawerProperties){
                     imageVector = Icons.Default.Menu,
                     contentDescription = "Menu"
                 )
-            }}
+            }
+        }
     )
 }
 
@@ -128,203 +135,39 @@ fun HomeScreenAddExpenseButton(expensesViewModel: ExpensesViewModel, categories:
             expenseValidState = expenseValid,
             resetExpenseValidState = { expensesViewModel.resetExpenseValidState() }
         )
+    }
 }
-}
-
-//@Composable
-//fun ExpenseValidation(
-//    addExpensesViewModel: AddExpensesViewModel,
-//    onDismiss: () -> Unit
-//) {
-//    val expenseValid by addExpensesViewModel.expenseValidState.collectAsState()
-//
-//    val context = LocalContext.current
-//    when (expenseValid) {
-//        is LoadDataState.Loading -> {}
-//        is LoadDataState.Success -> {
-//            LaunchedEffect(Unit) {
-//                Toast.makeText(context, "Expense added", Toast.LENGTH_SHORT).show()
-//            }
-//            onDismiss()
-//        }
-//
-//        is LoadDataState.Error -> {
-//            Toast.makeText(context, "Invalid expense!!", Toast.LENGTH_SHORT).show()
-//            addExpensesViewModel.resetExpenseValidState()
-//        }
-//    }
-//}
-
-//    AddExpenseDialog(addExpensesViewModel, categories, isDialogVisible, onDismiss = {
-//        isDialogVisible = false
-//        addExpensesViewModel.resetExpense()})
-
-
-//@Composable
-//fun AddExpenseDialog(addExpensesViewModel: AddExpensesViewModel,
-//                     categories: List<Category>?,
-//                     isDialogVisible: Boolean, onDismiss: () -> Unit) {
-//
-//    val expenseName :String by addExpensesViewModel.expenseName.observeAsState(initial = "")
-//    val expenseDate :String by addExpensesViewModel.expenseDate.observeAsState(initial = "")
-//    val expensePrice :String by addExpensesViewModel.expensePrice.observeAsState(initial = "")
-//    val expenseCategory :String by addExpensesViewModel.expenseCategory.observeAsState(initial = "")
-//
-//    ExpenseValidation(addExpensesViewModel, onDismiss)
-//
-//    if(isDialogVisible) {
-//        Dialog(onDismissRequest = onDismiss) {
-//            Card() {
-//                Column (
-//                    horizontalAlignment = Alignment.CenterHorizontally,
-//                    verticalArrangement = Arrangement.SpaceEvenly
-//                ){
-//                    AddExpenseHeadlineText("Add an expense")
-//                    AddExpenseNameField(expenseName) { addExpensesViewModel.onNameChanged(it) }
-//                    AddExpensePriceField(expensePrice) { addExpensesViewModel.onPriceChanged(it) }
-//                    AddExpenseDateField(expenseDate) { addExpensesViewModel.onDateChanged(it) }
-//                    AddExpenseCategoryField(expenseCategory, categories) {
-//                        addExpensesViewModel.onCategoryChanged(
-//                            it
-//                        )
-//                    }
-//                    AddExpenseFinalizeButtons(onDismiss) { addExpensesViewModel.onConfirmPressed() }
-//                }
-//            }
-//        }
-//    }
-//}
-//
-
-//
-//@Composable
-//private fun AddExpenseFinalizeButtons(onDismiss: () -> Unit, onConfirm: () -> Unit) {
-//    Row(
-//        modifier = Modifier
-//            .fillMaxWidth(),
-//        horizontalArrangement = Arrangement.End,
-//    ) {
-//        AddExpenseDismissButton(onDismiss)
-//        AddExpenseConfirmButton(onConfirm)
-//    }
-//}
-//
-//@Composable
-//private fun AddExpenseConfirmButton(onConfirm: () -> Unit) {
-//    TextButton(
-//        onClick = {
-//            onConfirm()
-//                  },
-//        modifier = Modifier.padding(8.dp),
-//    ) {
-//        Text("Confirm")
-//    }
-//}
-//
-//@Composable
-//private fun AddExpenseDismissButton(onDismiss: () -> Unit) {
-//    TextButton(
-//        onClick = { onDismiss() },
-//        modifier = Modifier.padding(8.dp),
-//    ) {
-//        Text("Dismiss")
-//    }
-//}
-//@Composable
-//private fun AddExpenseCategoryField(expenseCategory: String, categories: List<Category>?, onValueChange: (String) -> Unit) {
-//    var currentCategory by remember { mutableStateOf("Category") }
-//    var isExpanded by remember { mutableStateOf(false) }
-//    Box () {
-//        ExposedDropdownMenuBox(expanded = isExpanded, onExpandedChange = { isExpanded = it }) {
-//            TextField(value = currentCategory,
-//                onValueChange = {},
-//                readOnly = true,
-//                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = isExpanded) },
-//                colors = ExposedDropdownMenuDefaults.textFieldColors(),
-//                modifier = Modifier.menuAnchor()
-//            )
-//
-//            ExposedDropdownMenu(expanded = isExpanded, onDismissRequest = { isExpanded = false }) {
-//                categories?.forEach { category ->
-//                    val categoryName = category.toString()
-//                    DropdownMenuItem(text = { Text(text = categoryName) },
-//                    onClick = {
-//                        currentCategory = categoryName
-//                        onValueChange(categoryName)
-//                        isExpanded = false
-//                    })
-//                }
-//            }
-//        }
-//    }
-//}
-//
-//@Composable
-//fun AddExpenseDateField(expenseDate: String, onValueChange: (String) -> Unit) {
-//    OutlinedTextField(
-//        value = expenseDate,
-//        onValueChange = { onValueChange(it) },
-//        label = { Text("dd/mm/yyyy") },
-//    )
-//}
-//
-//@Composable
-//private fun AddExpensePriceField(expensePrice: String, onValueChange: (String) -> Unit) {
-//    OutlinedTextField(
-//        value = expensePrice,
-//        onValueChange = { onValueChange(it) },
-//        label = { Text("Price $") },
-//        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
-//    )
-//}
-//
-//@Composable
-//private fun AddExpenseNameField(expenseName: String, onValueChange: (String) -> Unit) {
-//    OutlinedTextField(
-//        value = expenseName,
-//        onValueChange = { onValueChange(it) },
-//        label = { Text("Name") }
-//    )
-//}
-//
-//@Composable
-//private fun AddExpenseHeadlineText(text: String) {
-//    Text(
-//        text = text,
-//        modifier = Modifier.padding(vertical = 10.dp)
-//    )
-//}
 
 @Composable
 fun ShowCategories(categories: List<Category>) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 6.dp),
-        ) {
-            CategoriesHeadlineText(Modifier.align(alignment = Alignment.CenterHorizontally))
-            Spacer(modifier = Modifier.height(8.dp))
-            if(categories.isEmpty()){
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ){
-                    Text(
-                        text = "No categories",
-                        color = Color(0xFF8a969c)
-                    )
-                }
-            } else {
-                LazyColumn(
-                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 10.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    items(categories) { category ->
-                        ShowCategory(category = category)
-                    }
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 9.dp),
+    ) {
+        CategoriesHeadlineText(Modifier.align(alignment = Alignment.CenterHorizontally))
+        Spacer(modifier = Modifier.height(8.dp))
+        if (categories.isEmpty()) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "No categories",
+                    color = Color(0xFF8a969c)
+                )
+            }
+        } else {
+            LazyColumn(
+                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 10.dp),
+                verticalArrangement = Arrangement.spacedBy(15.dp)
+            ) {
+                items(categories) { category ->
+                    ShowCategory(category = category)
                 }
             }
         }
+    }
 }
 
 @Composable
@@ -338,10 +181,12 @@ private fun CategoriesHeadlineText(modifier: Modifier) {
 
 @Composable
 fun ShowCategory(category: Category) {
-    ElevatedButton(onClick = { /*TODO: mostrar gastos de la categoria especifica*/println("Click") },
+    ElevatedButton(
+        onClick = { /*TODO: mostrar gastos de la categoria especifica*/println("Click") },
         modifier = Modifier
             .fillMaxSize()
-            .height(70.dp)) {
+            .height(100.dp)
+    ) {
         CategoryData(category)
     }
 }
@@ -365,12 +210,14 @@ private fun CategoryData(category: Category) {
 
 @Composable
 private fun CategoryMaxAmount(category: Category, modifier: Modifier) {
-    val numberColor = if (category.spentAmount > category.maxAmount) Color.Red else MaterialTheme.colorScheme.onPrimaryContainer
+    val numberColor =
+        if (category.spentAmount > category.maxAmount) Color.Red else MaterialTheme.colorScheme.onPrimaryContainer
     Text(
         "$" + category.maxAmount.toString(),
         color = numberColor,
         modifier = modifier,
-        textAlign = TextAlign.End
+        textAlign = TextAlign.End,
+        fontSize = 15.sp
     )
 }
 
@@ -378,8 +225,8 @@ private fun CategoryMaxAmount(category: Category, modifier: Modifier) {
 private fun CategorySpentAmount(category: Category, modifier: Modifier) {
     Text(
         text = "$" + category.spentAmount.toString(),
-        modifier = modifier.padding(top = 6.dp),
-        fontSize = 12.sp
+        modifier = modifier.padding(top = 8.dp),
+        fontSize = 15.sp
     )
 }
 
@@ -388,12 +235,13 @@ private fun CategoryProgressBar(category: Category) {
     LinearProgressIndicator(
         progress = category.spentAmount / category.maxAmount.toFloat(),
         modifier = Modifier
-            .height(25.dp)
+            .height(30.dp)
+            .width(150.dp)
             .padding(top = 6.dp)
     )
 }
 
 @Composable
 private fun CategoryNameText(category: Category, modifier: Modifier) {
-    Text(category.toString(), modifier = modifier)
+    Text(category.toString(), modifier = modifier, fontSize = 18.sp)
 }
