@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -25,11 +26,14 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -41,7 +45,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 
@@ -193,33 +196,16 @@ fun ShowCategory(category: Category) {
 
 @Composable
 private fun CategoryData(category: Category) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        CategoryNameText(category, Modifier.weight(1f))
-        Spacer(modifier = Modifier.width(18.dp))
-        Column(modifier = Modifier.weight(1.2f)) {
-            CategoryProgressBar(category)
-            CategorySpentAmount(category, Modifier.align(alignment = Alignment.CenterHorizontally))
+    Column(modifier = Modifier.fillMaxSize()) {
+        Spacer(modifier = Modifier.height(6.dp))
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+            CategoryNameText(category = category, modifier = Modifier.align(Alignment.CenterVertically))
+            CategorySpentAmount(category = category, modifier = Modifier.align(Alignment.CenterVertically))
         }
-        CategoryMaxAmount(category, Modifier.weight(1f))
+        CategoryProgressBar(category = category)
     }
 }
 
-@Composable
-private fun CategoryMaxAmount(category: Category, modifier: Modifier) {
-    val numberColor =
-        if (category.spentAmount > category.maxAmount) Color.Red else MaterialTheme.colorScheme.onPrimaryContainer
-    Text(
-        "$" + category.maxAmount.toString(),
-        color = numberColor,
-        modifier = modifier,
-        textAlign = TextAlign.End,
-        fontSize = 15.sp
-    )
-}
 
 @Composable
 private fun CategorySpentAmount(category: Category, modifier: Modifier) {
@@ -231,17 +217,22 @@ private fun CategorySpentAmount(category: Category, modifier: Modifier) {
 }
 
 @Composable
-private fun CategoryProgressBar(category: Category) {
-    LinearProgressIndicator(
-        progress = category.spentAmount / category.maxAmount.toFloat(),
-        modifier = Modifier
-            .height(30.dp)
-            .width(150.dp)
-            .padding(top = 6.dp)
-    )
+private fun CategoryNameText(category: Category, modifier: Modifier) {
+    Box(modifier = modifier, contentAlignment = Alignment.Center) {
+        Text(text = category.name, fontSize = 18.sp)
+    }
 }
 
 @Composable
-private fun CategoryNameText(category: Category, modifier: Modifier) {
-    Text(category.toString(), modifier = modifier, fontSize = 18.sp)
+private fun CategoryProgressBar(category: Category) {
+    val progress = category.spentAmount / category.maxAmount
+    val color = if (progress >= 1) Color.Red else MaterialTheme.colorScheme.primary
+    LinearProgressIndicator(
+        progress = progress,
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(15.dp)
+            .padding(top = 6.dp),
+        color = color
+    )
 }

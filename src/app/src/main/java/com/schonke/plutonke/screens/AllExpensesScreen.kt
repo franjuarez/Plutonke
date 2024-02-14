@@ -20,6 +20,7 @@ import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
@@ -187,7 +188,9 @@ fun ShowAllExpenses(expenses: List<Expense>, onExpenseClick: (Expense) -> Unit) 
 fun ShowExpense(expense: Expense, onExpenseClick: (Expense) -> Unit) {
     ElevatedCard(
         shape = RoundedCornerShape(10.dp),
-        modifier = Modifier.fillMaxWidth().padding(vertical =  5.dp), // Agrega padding vertical para hacer más grande el Card
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 5.dp), // Agrega padding vertical para hacer más grande el Card
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.background,
             contentColor = MaterialTheme.colorScheme.primary,
