@@ -27,6 +27,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.ColorScheme
+import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
@@ -166,7 +167,11 @@ fun ShowCategories(categories: List<Category>) {
                 verticalArrangement = Arrangement.spacedBy(15.dp)
             ) {
                 items(categories) { category ->
-                    ShowCategory(category = category)
+                    Column(){
+                        ShowCategory(category = category)
+                        Spacer(modifier = Modifier.height(5.dp))
+//                        Divider()
+                    }
                 }
             }
         }
@@ -184,28 +189,21 @@ private fun CategoriesHeadlineText(modifier: Modifier) {
 
 @Composable
 fun ShowCategory(category: Category) {
-    ElevatedButton(
-        onClick = { /*TODO: mostrar gastos de la categoria especifica*/println("Click") },
-        modifier = Modifier
-            .fillMaxSize()
-            .height(100.dp)
-    ) {
-        CategoryData(category)
-    }
-}
-
-@Composable
-private fun CategoryData(category: Category) {
     Column(modifier = Modifier.fillMaxSize()) {
         Spacer(modifier = Modifier.height(6.dp))
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            CategoryNameText(category = category, modifier = Modifier.align(Alignment.CenterVertically))
-            CategorySpentAmount(category = category, modifier = Modifier.align(Alignment.CenterVertically))
+            CategoryNameText(
+                category = category,
+                modifier = Modifier.align(Alignment.CenterVertically)
+            )
+            CategorySpentAmount(
+                category = category,
+                modifier = Modifier.align(Alignment.CenterVertically)
+            )
         }
         CategoryProgressBar(category = category)
     }
 }
-
 
 @Composable
 private fun CategorySpentAmount(category: Category, modifier: Modifier) {
