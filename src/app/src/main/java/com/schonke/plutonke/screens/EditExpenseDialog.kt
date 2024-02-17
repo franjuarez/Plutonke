@@ -170,15 +170,16 @@ private fun AddExpenseCategoryField(
     categories: List<Category>?,
     onValueChange: (UInt) -> Unit
 ) {
+    println(expenseCategoryID)
     var currentCategory by remember { mutableStateOf(
             if (expenseCategoryID == 0U) "Category"
-            else categories?.find { it.id == expenseCategoryID })
+            else categories?.find { it.id == expenseCategoryID }.toString())
     }
     var isExpanded by remember { mutableStateOf(false) }
     Box() {
         ExposedDropdownMenuBox(expanded = isExpanded, onExpandedChange = { isExpanded = it }) {
             TextField(
-                value = currentCategory.toString(),
+                value = currentCategory,
                 onValueChange = {},
                 readOnly = true,
                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = isExpanded) },
@@ -188,7 +189,7 @@ private fun AddExpenseCategoryField(
 
             ExposedDropdownMenu(expanded = isExpanded, onDismissRequest = { isExpanded = false }) {
                 categories?.forEach { category ->
-                    var categoryName = category.name
+                    val categoryName = category.name
                     DropdownMenuItem(text = { Text(text = categoryName) },
                         onClick = {
                             currentCategory = categoryName

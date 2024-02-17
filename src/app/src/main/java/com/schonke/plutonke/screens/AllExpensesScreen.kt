@@ -120,19 +120,15 @@ fun EditExpenseOnClickDialog(
     onDismiss: () -> Unit,
     categories: List<Category>
 ) {
-    val expenseDate: String by expensesViewModel.expenseDate.observeAsState(initial = "")
-    val expenseName: String by expensesViewModel.expenseName.observeAsState(initial = "")
-    val expensePrice: String by expensesViewModel.expensePrice.observeAsState(initial = "")
-    val expenseCategory: UInt by expensesViewModel.expenseCategoryID.observeAsState(initial = 0U)
+    val expenseDate: String by expensesViewModel.expenseDate.observeAsState(initial = selectedExpense.date)
+    val expenseName: String by expensesViewModel.expenseName.observeAsState(initial = selectedExpense.name)
+    val expensePrice: String by expensesViewModel.expensePrice.observeAsState(initial = selectedExpense.price.toString())
+    val expenseCategory: UInt by expensesViewModel.expenseCategoryID.observeAsState(initial = selectedExpense.categoryID)
 
     expensesViewModel.onNameChanged(expenseName)
     expensesViewModel.onDateChanged(expenseDate)
     expensesViewModel.onPriceChanged(expensePrice)
-    expensesViewModel.onCategoryChanged(expenseCategory) //TODO: ver pq pinga anda
-//    expensesViewModel.onNameChanged(selectedExpense.name)
-//    expensesViewModel.onDateChanged(selectedExpense.date)
-//    expensesViewModel.onPriceChanged(selectedExpense.price)
-//    expensesViewModel.onCategoryChanged(selectedExpense.category)
+    expensesViewModel.onCategoryChanged(expenseCategory)
 
     val expenseValid by expensesViewModel.expenseValidState.collectAsState()
 

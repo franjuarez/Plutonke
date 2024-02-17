@@ -169,8 +169,7 @@ fun ShowCategories(categories: List<Category>) {
                 items(categories) { category ->
                     Column(){
                         ShowCategory(category = category)
-                        Spacer(modifier = Modifier.height(5.dp))
-//                        Divider()
+                        Spacer(modifier = Modifier.height(10.dp))
                     }
                 }
             }
@@ -183,7 +182,7 @@ private fun CategoriesHeadlineText(modifier: Modifier) {
     Text(
         text = "Spent by Categories", modifier = modifier
             .padding(vertical = 4.dp),
-        style = TextStyle(fontSize = 18.sp)
+        style = TextStyle(fontSize = 22.sp)
     )
 }
 
@@ -224,7 +223,15 @@ private fun CategoryNameText(category: Category, modifier: Modifier) {
 @Composable
 private fun CategoryProgressBar(category: Category) {
     val progress = category.spentAmount / category.maxAmount
-    val color = if (progress >= 1) Color.Red else MaterialTheme.colorScheme.primary
+    var color: Color
+    if (progress < 0.3f){
+        color = Color(0xFF35D413)
+    } else if (progress > 0.3f && progress < 1f){
+        color = Color(0xFFF17712)
+    } else{
+        color = Color(0xFFF12020)
+    }
+//    val color = if (progress >= 1) Color.Red else MaterialTheme.colorScheme.primary
     LinearProgressIndicator(
         progress = progress,
         modifier = Modifier
