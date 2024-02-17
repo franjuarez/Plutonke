@@ -47,6 +47,7 @@ import com.schonke.plutonke.types.Category
 import com.schonke.plutonke.viewModels.AllExpensesScreenViewModel
 import com.schonke.plutonke.viewModels.ExpensesViewModel
 import kotlinx.coroutines.launch
+import java.io.IOException
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
@@ -61,8 +62,7 @@ fun AllExpensesScreen(
 
     val dataUpdated by allExpensesScreenViewModel.dataUpdated.observeAsState()
 
-    if (dataUpdated == true) {/*For recomposition*/
-    }
+    if (dataUpdated == true) {/*For recomposition*/}
 
     var isDialogVisible by remember { mutableStateOf(false) }
     var selectedExpense by remember { mutableStateOf<Expense?>(null) }
@@ -83,7 +83,7 @@ fun AllExpensesScreen(
                     categories ?: emptyList()
                 )
             }
-            ShowAllExpenses(expenses ?: emptyList()) { clickedExpense ->
+            ShowAllExpenses(expenses ?: emptyList(), categories ?: emptyList()) { clickedExpense ->
                 selectedExpense = clickedExpense
                 isDialogVisible = true
             }
@@ -160,7 +160,7 @@ fun EditExpenseOnClickDialog(
 }
 
 @Composable
-fun ShowAllExpenses(expenses: List<Expense>, onExpenseClick: (Expense) -> Unit) {
+fun ShowAllExpenses(expenses: List<Expense>, categories: List<Category>, onExpenseClick: (Expense) -> Unit) {
     if (expenses.isEmpty()) {
         Box(
             modifier = Modifier.fillMaxSize(),
@@ -178,7 +178,7 @@ fun ShowAllExpenses(expenses: List<Expense>, onExpenseClick: (Expense) -> Unit) 
             modifier = Modifier.background(MaterialTheme.colorScheme.background)
         ) {
             items(expenses) { expense ->
-                ShowExpense(expense, onExpenseClick)
+                ShowExpense(expense, categories, onExpenseClick)
             }
         }
     }
@@ -186,7 +186,7 @@ fun ShowAllExpenses(expenses: List<Expense>, onExpenseClick: (Expense) -> Unit) 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ShowExpense(expense: Expense, onExpenseClick: (Expense) -> Unit) {
+fun ShowExpense(expense: Expense, categories: List<Category>, onExpenseClick: (Expense) -> Unit) {
     ElevatedCard(
         shape = RoundedCornerShape(10.dp),
         modifier = Modifier
@@ -201,6 +201,7 @@ fun ShowExpense(expense: Expense, onExpenseClick: (Expense) -> Unit) {
         elevation = CardDefaults.cardElevation(defaultElevation =  5.dp),
         onClick = { onExpenseClick(expense) }
     ) {
+        val category = categories.find { it.id == expense.categoryID}?.name ?: throw IOException("invalid expense category")
         ListItem(
             headlineContent = {
                 Box(modifier = Modifier, contentAlignment = Alignment.Center) {
@@ -209,7 +210,7 @@ fun ShowExpense(expense: Expense, onExpenseClick: (Expense) -> Unit) {
             },
             supportingContent = {
                 Text(
-                    text = expense.categoryID.toString(), //TODO: necesitamos categories
+                    text = category,
                     modifier = Modifier.wrapContentSize(),
                     fontSize =  14.sp, fontWeight = FontWeight.ExtraBold
                 )
