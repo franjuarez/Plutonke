@@ -4,8 +4,6 @@ import androidx.lifecycle.ViewModel
 import com.schonke.plutonke.types.Expense
 import com.schonke.plutonke.data.BackendFactory
 import com.schonke.plutonke.types.Category
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import java.io.IOException
 
 class BackendViewModel : ViewModel() {
@@ -40,7 +38,7 @@ class BackendViewModel : ViewModel() {
         return call.isSuccessful
     }
 
-    suspend fun deleteExpense(id: String): Boolean{
+    suspend fun deleteExpense(id: UInt): Boolean{
         val call = backend.deleteExpense(id)
         return call.isSuccessful
     }

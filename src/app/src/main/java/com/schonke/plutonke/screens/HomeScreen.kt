@@ -114,7 +114,7 @@ fun HomeScreenAddExpenseButton(expensesViewModel: ExpensesViewModel, categories:
     val expenseName: String by expensesViewModel.expenseName.observeAsState(initial = "")
     val expenseDate: String by expensesViewModel.expenseDate.observeAsState(initial = "")
     val expensePrice: String by expensesViewModel.expensePrice.observeAsState(initial = "")
-    val expenseCategory: String by expensesViewModel.expenseCategory.observeAsState(initial = "")
+    val expenseCategoryID: UInt by expensesViewModel.expenseCategoryID.observeAsState(initial = 0U)
     val expenseValid by expensesViewModel.expenseValidState.collectAsState()
 
     if (isDialogVisible) {
@@ -123,7 +123,7 @@ fun HomeScreenAddExpenseButton(expensesViewModel: ExpensesViewModel, categories:
             expenseName = expenseName,
             expensePrice = expensePrice,
             expenseDate = expenseDate,
-            expenseCategory = expenseCategory,
+            expenseCategoryID = expenseCategoryID,
             categories = categories,
             onNameChanged = { expensesViewModel.onNameChanged(it) },
             onPriceChanged = { expensesViewModel.onPriceChanged(it) },

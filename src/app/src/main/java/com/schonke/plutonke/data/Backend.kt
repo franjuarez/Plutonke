@@ -22,10 +22,10 @@ interface Backend {
     suspend fun addExpense(@Body expense: Expense): Response<Expense>
 
     @PUT("expenses/{id}")
-    suspend fun updateExpense(@Path("id") expenseId: String, @Body expense: Expense): Response<Expense>
+    suspend fun updateExpense(@Path("id") expenseId: UInt, @Body expense: Expense): Response<Expense>
 
     @DELETE("expenses/{id}")
-    suspend fun deleteExpense(@Path("id") expenseId: String): Response<Void>
+    suspend fun deleteExpense(@Path("id") expenseId: UInt): Response<Void>
 
     @GET("categories")
     suspend fun getAllCategories(): Response<List<Category>>

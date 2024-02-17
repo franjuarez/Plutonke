@@ -20,7 +20,6 @@ import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
@@ -29,7 +28,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
@@ -49,7 +47,6 @@ import com.schonke.plutonke.types.Category
 import com.schonke.plutonke.viewModels.AllExpensesScreenViewModel
 import com.schonke.plutonke.viewModels.ExpensesViewModel
 import kotlinx.coroutines.launch
-import kotlin.math.exp
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
@@ -126,12 +123,16 @@ fun EditExpenseOnClickDialog(
     val expenseDate: String by expensesViewModel.expenseDate.observeAsState(initial = "")
     val expenseName: String by expensesViewModel.expenseName.observeAsState(initial = "")
     val expensePrice: String by expensesViewModel.expensePrice.observeAsState(initial = "")
-    val expenseCategory: String by expensesViewModel.expenseCategory.observeAsState(initial = "")
+    val expenseCategory: UInt by expensesViewModel.expenseCategoryID.observeAsState(initial = 0U)
 
     expensesViewModel.onNameChanged(expenseName)
     expensesViewModel.onDateChanged(expenseDate)
     expensesViewModel.onPriceChanged(expensePrice)
-    expensesViewModel.onCategoryChanged(expenseCategory)
+    expensesViewModel.onCategoryChanged(expenseCategory) //TODO: ver pq pinga anda
+//    expensesViewModel.onNameChanged(selectedExpense.name)
+//    expensesViewModel.onDateChanged(selectedExpense.date)
+//    expensesViewModel.onPriceChanged(selectedExpense.price)
+//    expensesViewModel.onCategoryChanged(selectedExpense.category)
 
     val expenseValid by expensesViewModel.expenseValidState.collectAsState()
 
@@ -141,13 +142,13 @@ fun EditExpenseOnClickDialog(
         expenseName = expenseName,
         expensePrice = expensePrice,
         expenseDate = expenseDate,
-        expenseCategory = expenseCategory,
+        expenseCategoryID = expenseCategory,
         onNameChanged = { expensesViewModel.onNameChanged(it) },
         onPriceChanged = { expensesViewModel.onPriceChanged(it) },
         onDateChanged = { expensesViewModel.onDateChanged(it) },
         onCategoryChanged = { expensesViewModel.onCategoryChanged(it) },
         onConfirmPressed = {
-            expensesViewModel.onModifiedPressed(selectedExpense.id) //Todo: cambiar a edit
+            expensesViewModel.onModifiedPressed(selectedExpense.id)
             onDismiss()
         },
         showDeleteOption = true,
@@ -190,7 +191,7 @@ fun ShowExpense(expense: Expense, onExpenseClick: (Expense) -> Unit) {
         shape = RoundedCornerShape(10.dp),
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 5.dp), // Agrega padding vertical para hacer más grande el Card
+            .padding(vertical = 5.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.background,
             contentColor = MaterialTheme.colorScheme.primary,
@@ -203,14 +204,14 @@ fun ShowExpense(expense: Expense, onExpenseClick: (Expense) -> Unit) {
         ListItem(
             headlineContent = {
                 Box(modifier = Modifier, contentAlignment = Alignment.Center) {
-                    Text(text = expense.name, fontSize =  18.sp) // Aumenta el tamaño de la fuente
+                    Text(text = expense.name, fontSize =  18.sp)
                 }
             },
             supportingContent = {
                 Text(
-                    text = expense.category.toString(),
+                    text = expense.categoryID.toString(), //TODO: necesitamos categories
                     modifier = Modifier.wrapContentSize(),
-                    fontSize =  14.sp, fontWeight = FontWeight.ExtraBold // Aumenta el tamaño de la fuente
+                    fontSize =  14.sp, fontWeight = FontWeight.ExtraBold
                 )
             },
             trailingContent = {
@@ -219,9 +220,9 @@ fun ShowExpense(expense: Expense, onExpenseClick: (Expense) -> Unit) {
                         text = "$" + expense.price.toString(),
                         color = MaterialTheme.colorScheme.onPrimaryContainer,
                         modifier = Modifier.wrapContentSize(),
-                        fontSize =  20.sp // Aumenta el tamaño de la fuente
+                        fontSize =  20.sp
                     )
-                    Text(text = expense.date, fontSize =  14.sp) // Aumenta el tamaño de la fuente
+                    Text(text = expense.date, fontSize =  14.sp)
                 }
             },
             colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.primaryContainer),

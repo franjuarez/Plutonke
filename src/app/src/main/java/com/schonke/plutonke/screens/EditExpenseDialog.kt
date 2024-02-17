@@ -21,7 +21,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -35,7 +34,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.schonke.plutonke.states.LoadDataState
 import com.schonke.plutonke.types.Category
-import kotlin.math.exp
 
 @Composable
 fun EditExpenseDialog(
@@ -44,11 +42,11 @@ fun EditExpenseDialog(
     expenseName: String,
     expensePrice: String,
     expenseDate: String,
-    expenseCategory: String,
+    expenseCategoryID: UInt,
     onNameChanged: (String) -> Unit,
     onPriceChanged: (String) -> Unit,
     onDateChanged: (String) -> Unit,
-    onCategoryChanged: (String) -> Unit,
+    onCategoryChanged: (UInt) -> Unit,
     onConfirmPressed: () -> Unit,
     showDeleteOption: Boolean = false,
     onDeletePressed: () -> Unit = {},
@@ -61,16 +59,21 @@ fun EditExpenseDialog(
 
     Dialog(onDismissRequest = onDismiss) {
         Card() {
-            Column (
+            Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.SpaceEvenly
-            ){
+            ) {
                 AddExpenseHeadlineText(title)
                 AddExpenseNameField(expenseName) { onNameChanged(it) }
                 AddExpensePriceField(expensePrice) { onPriceChanged(it) }
                 AddExpenseDateField(expenseDate) { onDateChanged(it) }
-                AddExpenseCategoryField(expenseCategory, categories) { onCategoryChanged(it) }
-                AddExpenseFinalizeButtons(onDismiss, onConfirmPressed, showDeleteOption, onDeletePressed)
+                AddExpenseCategoryField(expenseCategoryID, categories) { onCategoryChanged(it) }
+                AddExpenseFinalizeButtons(
+                    onDismiss,
+                    onConfirmPressed,
+                    showDeleteOption,
+                    onDeletePressed
+                )
             }
         }
     }
@@ -97,32 +100,33 @@ fun ExpenseValidation(
         }
     }
 }
+
 @Composable
 private fun AddExpenseFinalizeButtons(
-        onDismiss: () -> Unit, onConfirm: () -> Unit,
-        showDeleteOption: Boolean = false,
-        onDeletePressed: () -> Unit)
-    {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Box(modifier = Modifier.width(IntrinsicSize.Min)) {
-                if (showDeleteOption) {
-                    AddExpenseDeleteButton(onDeletePressed)
-                } else {
-                    Spacer(modifier = Modifier.matchParentSize())
-                }
-            }
-            Row(
-                horizontalArrangement = Arrangement.End
-            ) {
-                AddExpenseDismissButton(onDismiss)
-                AddExpenseConfirmButton(onConfirm)
+    onDismiss: () -> Unit, onConfirm: () -> Unit,
+    showDeleteOption: Boolean = false,
+    onDeletePressed: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(modifier = Modifier.width(IntrinsicSize.Min)) {
+            if (showDeleteOption) {
+                AddExpenseDeleteButton(onDeletePressed)
+            } else {
+                Spacer(modifier = Modifier.matchParentSize())
             }
         }
+        Row(
+            horizontalArrangement = Arrangement.End
+        ) {
+            AddExpenseDismissButton(onDismiss)
+            AddExpenseConfirmButton(onConfirm)
+        }
+    }
 }
 
 @Composable
@@ -158,14 +162,23 @@ private fun AddExpenseDismissButton(onDismiss: () -> Unit) {
         Text("Dismiss")
     }
 }
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun AddExpenseCategoryField(expenseCategory: String, categories: List<Category>?, onValueChange: (String) -> Unit) {
-    var currentCategory by remember { mutableStateOf(if(expenseCategory.isEmpty()) "Category" else expenseCategory) }
+private fun AddExpenseCategoryField(
+    expenseCategoryID: UInt,
+    categories: List<Category>?,
+    onValueChange: (UInt) -> Unit
+) {
+    var currentCategory by remember { mutableStateOf(
+            if (expenseCategoryID == 0U) "Category"
+            else categories?.find { it.id == expenseCategoryID })
+    }
     var isExpanded by remember { mutableStateOf(false) }
-    Box () {
+    Box() {
         ExposedDropdownMenuBox(expanded = isExpanded, onExpandedChange = { isExpanded = it }) {
-            TextField(value = currentCategory,
+            TextField(
+                value = currentCategory.toString(),
                 onValueChange = {},
                 readOnly = true,
                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = isExpanded) },
@@ -175,11 +188,11 @@ private fun AddExpenseCategoryField(expenseCategory: String, categories: List<Ca
 
             ExposedDropdownMenu(expanded = isExpanded, onDismissRequest = { isExpanded = false }) {
                 categories?.forEach { category ->
-                    val categoryName = category.toString()
+                    var categoryName = category.name
                     DropdownMenuItem(text = { Text(text = categoryName) },
                         onClick = {
                             currentCategory = categoryName
-                            onValueChange(categoryName)
+                            onValueChange(category.id)
                             isExpanded = false
                         })
                 }

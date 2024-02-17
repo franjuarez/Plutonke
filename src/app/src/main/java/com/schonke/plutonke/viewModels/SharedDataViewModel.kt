@@ -44,8 +44,8 @@ class SharedDataViewModel : ViewModel() {
         }
     }
 
-    private fun changeCategorySpentAmount(categoryName: String, amount: Float) {
-        val category = _sharedCategories.value?.firstOrNull { it.name == categoryName }
+    private fun changeCategorySpentAmount(categoryID: UInt, amount: Float) {
+        val category = _sharedCategories.value?.find { it.id == categoryID}
             ?: throw Exception("Error! Trying to change a Category that doesn't exist.")
 
         category.spentAmount = category.spentAmount + amount
@@ -56,8 +56,9 @@ class SharedDataViewModel : ViewModel() {
         viewModelScope.launch(Dispatchers.IO) {
             val newExpense = backend.addExpense(expense)
             if (newExpense == null) {
+                println("error del server")
                 isExpenseValid.value =
-                    LoadDataState.Error("could not add new expense") //TODO: errores descriptivos
+                    LoadDataState.Error("Could not add new expense") //TODO: errores descriptivos
                 return@launch
             }
 
@@ -65,13 +66,13 @@ class SharedDataViewModel : ViewModel() {
                 (_sharedExpenses.value ?: mutableListOf()).toMutableList()
             expenses.add(newExpense)
             _sharedExpenses.postValue(expenses)
-            changeCategorySpentAmount(newExpense.category, newExpense.price)
+            changeCategorySpentAmount(newExpense.categoryID, newExpense.price)
             isExpenseValid.value = LoadDataState.Success("Expense added")
         }
     }
 
     //ver de meter early returns
-    fun removeExpense(id: String, isExpenseValid: MutableStateFlow<LoadDataState>) {
+    fun removeExpense(id: UInt, isExpenseValid: MutableStateFlow<LoadDataState>) {
         viewModelScope.launch(Dispatchers.IO) {
             val confirm = backend.deleteExpense(id)
             if (!confirm) {
@@ -89,18 +90,18 @@ class SharedDataViewModel : ViewModel() {
                 return@launch
             }
 
-            val category = expense.category
+            val categoryID = expense.categoryID
             val price = expense.price * -1
             expenses.remove(expense)
             _sharedExpenses.postValue(expenses)
-            changeCategorySpentAmount(category, price)
+            changeCategorySpentAmount(categoryID, price)
             isExpenseValid.value = LoadDataState.Success("Expense deleted")
         }
     }
 
 
     fun modifyExpense(
-        id: String,
+        id: UInt,
         modifiedExpense: Expense,
         isExpenseValid: MutableStateFlow<LoadDataState>
     ) {
@@ -133,12 +134,12 @@ class SharedDataViewModel : ViewModel() {
         oldExpense: Expense,
         modifiedExpense: Expense
     ) {
-        if (oldExpense.category == modifiedExpense.category) {
+        if (oldExpense.categoryID == modifiedExpense.categoryID) {
             val difference = modifiedExpense.price - oldExpense.price
-            changeCategorySpentAmount(modifiedExpense.category, difference)
+            changeCategorySpentAmount(modifiedExpense.categoryID, difference)
         } else {
-            changeCategorySpentAmount(oldExpense.category, oldExpense.price * -1)
-            changeCategorySpentAmount(modifiedExpense.category, modifiedExpense.price)
+            changeCategorySpentAmount(oldExpense.categoryID, oldExpense.price * -1)
+            changeCategorySpentAmount(modifiedExpense.categoryID, modifiedExpense.price)
         }
     }
 }

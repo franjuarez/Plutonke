@@ -4,11 +4,10 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.schonke.plutonke.states.LoadDataState
+import com.schonke.plutonke.types.Category
 import com.schonke.plutonke.types.Expense
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import java.io.IOException
-import kotlin.math.exp
 
 const val VALID_DATE_LENGTH = 10
 const val DATE_TOKEN = '/'
@@ -26,8 +25,8 @@ class ExpensesViewModel(
     private val _expensePrice = MutableLiveData<String>()
     val expensePrice: LiveData<String> = _expensePrice
 
-    private val _expenseCategory = MutableLiveData<String>()
-    val expenseCategory: LiveData<String> = _expenseCategory
+    private val _expenseCategoryID = MutableLiveData<UInt>()
+    val expenseCategoryID: LiveData<UInt> = _expenseCategoryID
 
     private val _expenseValidState = MutableStateFlow<LoadDataState>(LoadDataState.Loading)
     val expenseValidState: StateFlow<LoadDataState> = _expenseValidState
@@ -36,7 +35,7 @@ class ExpensesViewModel(
         _expenseName.value = ""
         _expenseDate.value = ""
         _expensePrice.value = ""
-        _expenseCategory.value = ""
+        _expenseCategoryID.value = 0U
         resetExpenseValidState()
     }
 
@@ -46,7 +45,7 @@ class ExpensesViewModel(
 
     private fun expenseHasNoNullFields(): Boolean {
         return !(_expenseName.value == null || _expensePrice.value == null ||
-                _expenseDate.value == null || _expenseCategory.value == null)
+                _expenseDate.value == null || _expenseCategoryID.value == null)
     }
 
     fun onConfirmPressed() {
@@ -55,22 +54,17 @@ class ExpensesViewModel(
                 ?.toFloatOrNull() ?: 0.0f
             dataViewModel.addExpense(
                 Expense(
-                    "0",
+                    0U,
                     expenseName.value!!,
                     expenseDate.value!!,
                     price,
-                    expenseCategory.value!!
+                    expenseCategoryID.value!!
                 ), _expenseValidState
             )
         }
     }
 
-    fun onModifiedPressed(id: String) {
-        println(_expenseName.value)
-        println(_expensePrice.value)
-        println(_expenseDate.value)
-        println(_expenseCategory.value)
-
+    fun onModifiedPressed(id: UInt) {
         if (expenseHasNoNullFields()) {
             val price = expensePrice.value?.replace(",", ".")
                 ?.toFloatOrNull() ?: 0.0f
@@ -80,14 +74,14 @@ class ExpensesViewModel(
                     id, expenseName.value!!,
                     expenseDate.value!!,
                     price,
-                    expenseCategory.value!!
+                    expenseCategoryID.value!!
                 ),
                 _expenseValidState
             )
         }
     }
 
-    fun onDeletePressed(id: String) {
+    fun onDeletePressed(id: UInt) {
         dataViewModel.removeExpense(id, _expenseValidState)
     }
 
@@ -107,8 +101,8 @@ class ExpensesViewModel(
         }
     }
 
-    fun onCategoryChanged(category: String) {
-        _expenseCategory.value = category
+    fun onCategoryChanged(categoryID: UInt) {
+        _expenseCategoryID.value = categoryID
     }
 
     private fun isFormingValidDate(date: String): Boolean {
