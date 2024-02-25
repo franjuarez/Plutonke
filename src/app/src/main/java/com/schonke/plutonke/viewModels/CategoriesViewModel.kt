@@ -34,4 +34,8 @@ class CategoriesViewModel(
     fun onMaxAmountChanged(newAmount: String) {
         _categoryMaxAmount.value = newAmount
     }
+
+    fun resetCategory() {
+        _categoryName = _categoryName.value
+    }
 }

@@ -2,17 +2,20 @@ package com.schonke.plutonke.screens
 
 import com.schonke.plutonke.viewModels.CategoriesViewModel
 
-package com.schonke.plutonke.screens
-
 import android.annotation.SuppressLint
+import android.widget.Space
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -20,6 +23,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -32,7 +36,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
+
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
@@ -46,13 +50,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.schonke.plutonke.types.Expense
 import com.schonke.plutonke.navigation.DrawerProperties
 import com.schonke.plutonke.types.Category
 import com.schonke.plutonke.viewModels.AllExpensesScreenViewModel
-import com.schonke.plutonke.viewModels.ExpensesViewModel
 import kotlinx.coroutines.launch
-import kotlin.math.exp
+import org.intellij.lang.annotations.JdkConstants.HorizontalAlignment
+import kotlin.math.round
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
@@ -89,8 +92,8 @@ fun EditCategoriesScreen(
                     categories ?: emptyList()
                 )
             }
-            ShowAllCategories(expenses ?: emptyList()) { clickedExpense ->
-                selectedExpense = clickedExpense
+            ShowAllCategories(categories ?: emptyList()) { clickedCategory ->
+                selectedCategory = clickedCategory
                 isDialogVisible = true
             }
         }
@@ -136,44 +139,45 @@ fun EditCategoryOnClickDialog(
 
     val expenseValid by categoriesViewModel.categoryValidState.collectAsState()
 
-    EditExpenseDialog(
-        title = "Edit an expense",
-        categories = categories,
-        expenseName = expenseName,
-        expensePrice = expensePrice,
-        expenseDate = expenseDate,
-
-        onNameChanged = { categoriesViewModel.onNameChanged(it) },
-        onPriceChanged = { categoriesViewModel.onPriceChanged(it) },
-        onDateChanged = { categoriesViewModel.onDateChanged(it) },
-        onCategoryChanged = { categoriesViewModel.onCategoryChanged(it) },
-        onConfirmPressed = {
-            categoriesViewModel.onModifiedPressed(selectedExpense.id) //Todo: cambiar a edit
-            onDismiss()
-        },
-        showDeleteOption = true,
-        onDeletePressed = { categoriesViewModel.onDeletePressed(selectedExpense.id) },
-        onDismiss = { onDismiss() },
-        expenseValidState = expenseValid,
-        resetExpenseValidState = { categoriesViewModel.resetExpenseValidState() }
-    )
+//    EditExpenseDialog(
+//        title = "Edit an expense",
+//        categories = categories,
+//        expenseName = expenseName,
+//        expensePrice = expensePrice,
+//        expenseDate = expenseDate,
+//
+//        onNameChanged = { categoriesViewModel.onNameChanged(it) },
+//        onPriceChanged = { categoriesViewModel.onPriceChanged(it) },
+//        onDateChanged = { categoriesViewModel.onDateChanged(it) },
+//        onCategoryChanged = { categoriesViewModel.onCategoryChanged(it) },
+//        onConfirmPressed = {
+//            categoriesViewModel.onModifiedPressed(selectedExpense.id) //Todo: cambiar a edit
+//            onDismiss()
+//        },
+//        showDeleteOption = true,
+//        onDeletePressed = { categoriesViewModel.onDeletePressed(selectedExpense.id) },
+//        onDismiss = { onDismiss() },
+//        expenseValidState = expenseValid,
+//        resetExpenseValidState = { categoriesViewModel.resetExpenseValidState() }
+//    )
 }
 
 @Composable
 fun ShowAllCategories(categories: List<Category>, onCategoryClick: (Category) -> Unit) {
     if (categories.isEmpty()) {
         Box(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxSize(),
             contentAlignment = Alignment.Center
         ) {
             Text(
-                text = "No expenses!",
+                text = "No categories yet! Tap to create.",
                 color = Color(0xFF8a969c)
             )
         }
     } else {
         LazyColumn(
-            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp),
+            contentPadding = PaddingValues(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(2.dp),
             modifier = Modifier.background(MaterialTheme.colorScheme.background)
         ) {
@@ -189,42 +193,64 @@ fun ShowAllCategories(categories: List<Category>, onCategoryClick: (Category) ->
 fun ShowCategory(category: Category, onCategoryClick: (Category) -> Unit) {
     ElevatedCard(
         shape = RoundedCornerShape(10.dp),
-        modifier = Modifier.fillMaxWidth().padding(vertical =  5.dp), // Agrega padding vertical para hacer más grande el Card
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 0.dp), // Agrega padding vertical para hacer más grande el Card
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.background,
             contentColor = MaterialTheme.colorScheme.primary,
             disabledContentColor = MaterialTheme.colorScheme.secondary,
             disabledContainerColor = MaterialTheme.colorScheme.tertiary
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation =  5.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 5.dp),
         onClick = { onCategoryClick(category) }
     ) {
-        ListItem(
-            headlineContent = {
-                Box(modifier = Modifier, contentAlignment = Alignment.Center) {
-                    Text(text = category.name, fontSize =  18.sp) // Aumenta el tamaño de la fuente
-                }
-            },
-            supportingContent = {
-                Text(
-                    text = category.name.toString(),
-                    modifier = Modifier.wrapContentSize(),
-                    fontSize =  14.sp, fontWeight = FontWeight.ExtraBold // Aumenta el tamaño de la fuente
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier.weight(1f),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(text = category.name, fontSize = 18.sp)
+            }
+            Spacer(modifier = Modifier.width(50.dp))
+            Box () {
+                CircularProgressIndicator(
+                    progress = category.spentAmount / category.maxAmount,
+                    modifier = Modifier.width(50.dp)
                 )
-            },
-            trailingContent = {
-                Column {
-                    Text(
-                        text = "$" + category.spentAmount.toString(),
-                        color = MaterialTheme.colorScheme.onPrimaryContainer,
-                        modifier = Modifier.wrapContentSize(),
-                        fontSize =  20.sp // Aumenta el tamaño de la fuente
-                    )
-                    Text(text = category.maxAmount.toString(), fontSize =  14.sp) // Aumenta el tamaño de la fuente
-                }
-            },
-            colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.primaryContainer),
-        )
-    }
-}
+                Text(
+                    text = "%" + (round((category.spentAmount / category.maxAmount)*100)).toString(),
+                    modifier = Modifier
+                        .align(alignment = Alignment.Center)
+                )
+            }
 
+
+            Spacer(modifier = Modifier.width(30.dp))
+            Column(
+                modifier = Modifier.weight(1f),
+                horizontalAlignment = Alignment.End
+            ) {
+                Text(
+                    text = "$" + category.spentAmount.toString(),
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+
+                    fontSize = 15.sp
+                )
+                Text(
+                    text = "$" + category.maxAmount.toString(),
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+
+                    fontSize = 14.sp
+                )
+            }
+        }
+
+    }
+
+}
