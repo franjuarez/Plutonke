@@ -11,16 +11,18 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import kotlin.math.exp
 
+const val DATE_FORMAT = "dd/MM/yyyy"
+
 @SuppressLint("SimpleDateFormat")
 fun convertUnixTimestampToDate(unixTimestamp: Long): String {
     val date = Date(unixTimestamp * 1000) // Convertimos de segundos a milisegundos
-    val format = SimpleDateFormat("dd-MM-yyyy")
+    val format = SimpleDateFormat(DATE_FORMAT)
     return format.format(date)
 }
 
 @SuppressLint("SimpleDateFormat")
 fun convertDateToUnixTimestamp(dateString: String): Long {
-    val format = SimpleDateFormat("dd-MM-yyyy")
+    val format = SimpleDateFormat(DATE_FORMAT)
     val date = format.parse(dateString) ?: throw IOException("error converting date")
     return date.time / 1000 // Convertimos de milisegundos a segundos
 }

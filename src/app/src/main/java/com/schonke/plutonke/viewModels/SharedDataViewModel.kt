@@ -1,5 +1,7 @@
 package com.schonke.plutonke.viewModels
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -12,6 +14,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import java.io.IOException
 import java.lang.Exception
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 class SharedDataViewModel : ViewModel() {
     private val backend = BackendViewModel()
@@ -52,6 +56,7 @@ class SharedDataViewModel : ViewModel() {
         dataUpdated.postValue(!dataUpdated.value!!)
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     fun addExpense(expense: Expense, isExpenseValid: MutableStateFlow<LoadDataState>) {
         viewModelScope.launch(Dispatchers.IO) {
             val newExpense = backend.addExpense(expense)
@@ -64,14 +69,45 @@ class SharedDataViewModel : ViewModel() {
 
             val expenses: MutableList<Expense> =
                 (_sharedExpenses.value ?: mutableListOf()).toMutableList()
-            expenses.add(newExpense)
+            addExpenseAtOrderedPosition(expenses, newExpense)
             _sharedExpenses.postValue(expenses)
             changeCategorySpentAmount(newExpense.categoryID, newExpense.price)
             isExpenseValid.value = LoadDataState.Success("Expense added")
         }
     }
 
-    //ver de meter early returns
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun isAfter(date1: String, date2: String): Boolean {
+        val format = DateTimeFormatter.ofPattern(DATE_FORMAT)
+        val newDate1 = LocalDate.parse(date1, format)
+        val newDate2 = LocalDate.parse(date2, format)
+
+        return newDate1.isAfter(newDate2)
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun addExpenseAtOrderedPosition(
+        expenses: MutableList<Expense>,
+        newExpense: Expense
+    ) {
+        val expenseDate = newExpense.date
+        var left =   0
+        var right = expenses.size -   1
+        var position = expenses.size
+
+        while (left <= right) {
+            val mid = (left + right) /   2
+            if (isAfter(expenses[mid].date, expenseDate)) {
+                left = mid +   1
+            } else {
+                right = mid -   1
+                position = mid
+            }
+        }
+        expenses.add(position, newExpense)
+    }
+
+
     fun removeExpense(id: UInt, isExpenseValid: MutableStateFlow<LoadDataState>) {
         viewModelScope.launch(Dispatchers.IO) {
             val confirm = backend.deleteExpense(id)
