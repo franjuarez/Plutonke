@@ -1,6 +1,7 @@
 package com.schonke.plutonke.data
 import com.schonke.plutonke.types.Category
 import com.schonke.plutonke.types.Expense
+import com.schonke.plutonke.types.ExpenseBackend
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -16,13 +17,13 @@ const val SERVER_URL = "http://192.168.1.2:8080/" //Para celular
 
 interface Backend {
     @GET("expenses")
-    suspend fun getAllExpenses(): Response<List<Expense>>
+    suspend fun getAllExpenses(): Response<List<ExpenseBackend>>
 
     @POST("expenses")
-    suspend fun addExpense(@Body expense: Expense): Response<Expense>
+    suspend fun addExpense(@Body expense: ExpenseBackend): Response<ExpenseBackend>
 
     @PUT("expenses/{id}")
-    suspend fun updateExpense(@Path("id") expenseId: UInt, @Body expense: Expense): Response<Expense>
+    suspend fun updateExpense(@Path("id") expenseId: UInt, @Body expense: ExpenseBackend): Response<ExpenseBackend>
 
     @DELETE("expenses/{id}")
     suspend fun deleteExpense(@Path("id") expenseId: UInt): Response<Void>
