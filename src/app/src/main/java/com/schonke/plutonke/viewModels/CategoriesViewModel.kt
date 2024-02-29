@@ -4,6 +4,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.schonke.plutonke.states.LoadDataState
+import com.schonke.plutonke.types.Expense
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
@@ -36,6 +37,33 @@ class CategoriesViewModel(
     }
 
     fun resetCategory() {
-        _categoryName = _categoryName.value
+        _categoryName.value = ""
+        _categoryMaxAmount.value = ""
     }
+
+    fun onCategoryNameChanged(newName: String) {
+        _categoryName.value = newName
+    }
+
+    fun onMaxChanged(newMax: String) {
+        _categoryMaxAmount.value = newMax
+    }
+
+    fun onModifiedPressed(id: String) {
+//        if (expenseHasNoNullFields()) {
+//            val price = expensePrice.value?.replace(",", ".")
+//                ?.toFloatOrNull() ?: 0.0f
+//            dataViewModel.modifyExpense(
+//                id,
+//                Expense(
+//                    id, expenseName.value!!,
+//                    expenseDate.value!!,
+//                    price,
+//                    expenseCategory.value!!
+//                ),
+//                _expenseValidState
+//            )
+//        }
+    }
+
 }

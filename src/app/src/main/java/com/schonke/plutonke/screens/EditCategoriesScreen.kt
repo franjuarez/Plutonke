@@ -8,6 +8,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -20,8 +21,10 @@ import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
@@ -31,8 +34,10 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -47,10 +52,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
 import com.schonke.plutonke.navigation.DrawerProperties
+import com.schonke.plutonke.states.LoadDataState
 import com.schonke.plutonke.types.Category
 import com.schonke.plutonke.viewModels.AllExpensesScreenViewModel
 import kotlinx.coroutines.launch
@@ -87,7 +95,7 @@ fun EditCategoriesScreen(
                     selectedCategory!!,
                     onDismiss = {
                         isDialogVisible = false
-                        categoriesViewModel.resetExpense()
+                        categoriesViewModel.resetCategory()
                     },
                     categories ?: emptyList()
                 )
@@ -125,7 +133,7 @@ fun EditCategoriesScreenTopBar(drawerProperties: DrawerProperties) {
 @Composable
 fun EditCategoryOnClickDialog(
     categoriesViewModel: CategoriesViewModel,
-    selectedExpense: Category,
+    selectedCategory: Category,
     onDismiss: () -> Unit,
     categories: List<Category>
 ) {
@@ -139,28 +147,107 @@ fun EditCategoryOnClickDialog(
 
     val expenseValid by categoriesViewModel.categoryValidState.collectAsState()
 
-//    EditExpenseDialog(
-//        title = "Edit an expense",
-//        categories = categories,
-//        expenseName = expenseName,
-//        expensePrice = expensePrice,
-//        expenseDate = expenseDate,
-//
-//        onNameChanged = { categoriesViewModel.onNameChanged(it) },
-//        onPriceChanged = { categoriesViewModel.onPriceChanged(it) },
-//        onDateChanged = { categoriesViewModel.onDateChanged(it) },
-//        onCategoryChanged = { categoriesViewModel.onCategoryChanged(it) },
-//        onConfirmPressed = {
-//            categoriesViewModel.onModifiedPressed(selectedExpense.id) //Todo: cambiar a edit
-//            onDismiss()
-//        },
-//        showDeleteOption = true,
-//        onDeletePressed = { categoriesViewModel.onDeletePressed(selectedExpense.id) },
-//        onDismiss = { onDismiss() },
-//        expenseValidState = expenseValid,
-//        resetExpenseValidState = { categoriesViewModel.resetExpenseValidState() }
-//    )
+    EditCategoryDialog(
+        title = "Edit A Category",
+        categories = categories,
+        expenseName = expenseName,
+        expensePrice = expensePrice,
+        expenseDate = expenseDate,
+
+        onNameChanged = {  categoriesViewModel.onCategoryNameChanged("jpkjljkl") },
+        onMaxChanged = { categoriesViewModel.onMaxChanged("33") },
+        onConfirmPressed = {
+            categoriesViewModel.onModifiedPressed(selectedCategory.id) //Todo: cambiar a edit
+            onDismiss()
+        },
+        showDeleteOption = true,
+        onDeletePressed = { /*categoriesViewModel.onDeletePressed(selectedExpense.id)*/ },
+        onDismiss = { onDismiss() },
+        expenseValidState = expenseValid,
+        resetExpenseValidState = { /*categoriesViewModel.resetExpenseValidState()*/ }
+    )
 }
+
+@Composable
+fun EditCategoryDialog(
+    title: String,
+    categories: List<Category>,
+    expenseName: String,
+    expensePrice: String,
+    expenseDate: String,
+    onNameChanged: () -> Unit,
+    onMaxChanged: () -> Unit,
+    onConfirmPressed: () -> Unit,
+    showDeleteOption: Boolean,
+    onDeletePressed: () -> Unit,
+    onDismiss: () -> Unit,
+    expenseValidState: LoadDataState,
+    resetExpenseValidState: () -> Unit
+) {
+    Dialog(onDismissRequest = onDismiss) {
+        Card() {
+            Column (
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.SpaceEvenly
+            ){
+                Text(
+                    text = title,
+                    modifier = Modifier.padding(vertical = 10.dp)
+                )
+                OutlinedTextField(
+                    value = expenseName,
+                    onValueChange = { onNameChanged() },
+                    label = { Text("Name") }
+                )
+                OutlinedTextField(
+                    value = expensePrice,
+                    onValueChange = { onMaxChanged() },
+                    label = { Text("Max $") },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                )
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Box(modifier = Modifier.width(IntrinsicSize.Min)) {
+                        if (showDeleteOption) {
+                            AddExpenseDeleteButton(onDeletePressed)
+                        } else {
+                            Spacer(modifier = Modifier.matchParentSize())
+                        }
+                    }
+                    Row(
+                        horizontalArrangement = Arrangement.End
+                    ) {
+                        //AddExpenseDismissButton(onDismiss)
+                        TextButton(
+                            onClick = { onDismiss() },
+                            modifier = Modifier.padding(8.dp),
+                        ) {
+                            Text("Dismiss")
+                        }
+                        //AddExpenseConfirmButton(onConfirm)
+                        TextButton(
+                            onClick = {
+                                /*onConfirm()*/
+                            },
+                            modifier = Modifier.padding(8.dp),
+                        ) {
+                            Text("Confirm")
+                        }
+                    }
+                }
+
+
+
+            }
+        }
+    }
+}
+
 
 @Composable
 fun ShowAllCategories(categories: List<Category>, onCategoryClick: (Category) -> Unit) {
