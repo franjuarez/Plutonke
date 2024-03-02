@@ -1,6 +1,6 @@
 package com.schonke.plutonke.data
+
 import com.schonke.plutonke.types.Category
-import com.schonke.plutonke.types.Expense
 import com.schonke.plutonke.types.ExpenseBackend
 import retrofit2.Response
 import retrofit2.Retrofit
@@ -17,25 +17,31 @@ const val SERVER_URL = "http://192.168.1.2:8080/" //Para celular
 
 interface Backend {
     @GET("expenses")
-    suspend fun getAllExpenses(): Response<List<ExpenseBackend>>
+    suspend fun getAllExpenses(): Response<List<Any>>
 
     @POST("expenses")
-    suspend fun addExpense(@Body expense: ExpenseBackend): Response<ExpenseBackend>
+    suspend fun addExpense(@Body expense: ExpenseBackend): Response<Any>
 
     @PUT("expenses/{id}")
-    suspend fun updateExpense(@Path("id") expenseId: UInt, @Body expense: ExpenseBackend): Response<ExpenseBackend>
+    suspend fun updateExpense(
+        @Path("id") expenseId: UInt,
+        @Body expense: ExpenseBackend
+    ): Response<Resource<ExpenseBackend>>
 
     @DELETE("expenses/{id}")
-    suspend fun deleteExpense(@Path("id") expenseId: UInt): Response<Void>
+    suspend fun deleteExpense(@Path("id") expenseId: UInt): Response<Resource<Unit>>
 
     @GET("categories")
-    suspend fun getAllCategories(): Response<List<Category>>
+    suspend fun getAllCategories(): Response<Any>
 
     @PUT("categories/{id}")
-    suspend fun updateCategory(@Path("id") categoryId: String, @Body category: Category): Response<Category>
+    suspend fun updateCategory(
+        @Path("id") categoryId: String,
+        @Body category: Category
+    ): Response<Resource<Category>>
 
     @DELETE("categories/{id}")
-    suspend fun deleteCategory(@Path("id") categoryId: String): Response<Void>
+    suspend fun deleteCategory(@Path("id") categoryId: String): Response<Resource<Unit>>
 }
 
 object BackendFactory {
@@ -44,6 +50,7 @@ object BackendFactory {
         .baseUrl(SERVER_URL)
         .addConverterFactory(GsonConverterFactory.create())
         .build()
+
     fun getInstance(): Backend {
         return backend.create(Backend::class.java)
     }

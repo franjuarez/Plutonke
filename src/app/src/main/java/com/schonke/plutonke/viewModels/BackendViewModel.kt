@@ -2,20 +2,24 @@ package com.schonke.plutonke.viewModels
 
 import android.annotation.SuppressLint
 import androidx.lifecycle.ViewModel
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
+import com.schonke.plutonke.data.Resource
 import com.schonke.plutonke.types.Expense
 import com.schonke.plutonke.data.BackendFactory
+import com.schonke.plutonke.errors.ValidationError
 import com.schonke.plutonke.types.Category
 import com.schonke.plutonke.types.ExpenseBackend
 import java.io.IOException
+import java.lang.Exception
 import java.text.SimpleDateFormat
 import java.util.Date
-import kotlin.math.exp
 
 const val DATE_FORMAT = "dd/MM/yyyy"
 
 @SuppressLint("SimpleDateFormat")
 fun convertUnixTimestampToDate(unixTimestamp: Long): String {
-    val date = Date(unixTimestamp * 1000) // Convertimos de segundos a milisegundos
+    val date = Date(unixTimestamp * 1000)
     val format = SimpleDateFormat(DATE_FORMAT)
     return format.format(date)
 }
@@ -24,7 +28,7 @@ fun convertUnixTimestampToDate(unixTimestamp: Long): String {
 fun convertDateToUnixTimestamp(dateString: String): Long {
     val format = SimpleDateFormat(DATE_FORMAT)
     val date = format.parse(dateString) ?: throw IOException("error converting date")
-    return date.time / 1000 // Convertimos de milisegundos a segundos
+    return date.time / 1000
 }
 
 fun changeExpenseToBackendExpense(expense: Expense): ExpenseBackend {
@@ -47,53 +51,106 @@ private fun changeBackendExpenseToExpense(expenseBackend: ExpenseBackend): Expen
     )
 }
 
+inline fun <reified T> fromJsonGeneric(json: String): T {
+    val type = object : TypeToken<T>() {}.type
+    return Gson().fromJson(json, type)
+}
+
 class BackendViewModel : ViewModel() {
     private val backend = BackendFactory.getInstance()
-
-    suspend fun fetchExpenses(): List<Expense> {
+    suspend fun fetchExpenses(): Resource<List<Expense>> {
         val call = backend.getAllExpenses()
-        if (call.isSuccessful) {
-            val expensesBackend = call.body() ?: emptyList()
-            val expenses = mutableListOf<Expense>()
-            expensesBackend.forEach { expenseBackend ->
-                val expense = changeBackendExpenseToExpense(expenseBackend)
-                expenses.add(expense)
+        val result = call.body()
+        return try {
+            if (call.isSuccessful) {
+                val expensesBackend = fromJsonGeneric<List<ExpenseBackend>>(result.toString())
+                val expenses = expensesBackend.map { changeBackendExpenseToExpense(it) }
+                Resource.Success(expenses)
+            } else {
+                val errorResponse = fromJsonGeneric<List<ValidationError>>(result.toString())
+                Resource.ErrorValidation(errorResponse)
             }
-            return expenses
+        } catch (e: Exception) {
+            Resource.Error(e.message ?: "Unexpected server error")
         }
-        throw IOException("Error fetching Expenses! : ${call.errorBody()?.string()}")
     }
 
-
-
-    suspend fun fetchCategories(): List<Category> {
+    suspend fun fetchCategories(): Resource<List<Category>> {
         val call = backend.getAllCategories()
-        if (call.isSuccessful) {
-            return call.body() ?: emptyList()
+        val result = call.body()
+        return try {
+            if (call.isSuccessful) {
+                val categories = fromJsonGeneric<List<Category>>(result.toString())
+                Resource.Success(categories)
+            } else {
+                val errorResponse = fromJsonGeneric<List<ValidationError>>(result.toString())
+                Resource.ErrorValidation(errorResponse)
+            }
+        } catch (e: Exception) {
+            Resource.Error(e.message ?: "Unexpected server error")
         }
-        throw IOException("Error fetching Categories! : ${call.errorBody()?.string()}")
     }
 
-    suspend fun addExpense(expense: Expense): Expense? {
+    suspend fun addExpense(expense: Expense): Resource<Expense> {
         val backendExpense = changeExpenseToBackendExpense(expense)
         val call = backend.addExpense(backendExpense)
-        if (call.isSuccessful) {
-            if(call.body() == null){
-                return null
+        val result = call.body()
+        return try {
+            if (call.isSuccessful) {
+                val backendExpenseResponse = fromJsonGeneric<ExpenseBackend>(result.toString())
+                Resource.Success(changeBackendExpenseToExpense(backendExpenseResponse))
+//                val backendExpenseResponse = call.body()
+//                if (backendExpenseResponse?.data == null) {
+//                    Resource.Error("Unexpected server response")
+//                } else {
+//                    Resource.Success(changeBackendExpenseToExpense(backendExpenseResponse.data))
+//                }
+            } else {
+                val errBody = call.errorBody()?.string() ?: ""
+                println(errBody)
+                val errorResponse = fromJsonGeneric<List<ValidationError>>(errBody!!)
+                println(errorResponse) //NULl!!!!!
+                Resource.ErrorValidation(errorResponse)
+//                val errorResponse = call.body()?.errorResponse ?: emptyList()
+//                Resource.ErrorValidation(errorResponse)
             }
-            return changeBackendExpenseToExpense(call.body()!!)
+        } catch (e: Exception) {
+            Resource.Error(e.message ?: "Unexpected server error")
         }
-        return null
     }
 
-    suspend fun editExpense(expense: Expense): Boolean {
+
+    suspend fun editExpense(expense: Expense): Resource<Expense> {
         val backendExpense = changeExpenseToBackendExpense(expense)
         val call = backend.updateExpense(expense.id, backendExpense)
-        return call.isSuccessful
+        return try {
+            if (call.isSuccessful) {
+                val backendExpenseResponse = call.body()
+                if (backendExpenseResponse?.data == null) {
+                    Resource.Error("Unexpected server response")
+                } else {
+                    Resource.Success(changeBackendExpenseToExpense(backendExpenseResponse.data))
+                }
+            } else {
+                val errorResponse = call.body()?.errorResponse ?: emptyList()
+                Resource.ErrorValidation(errorResponse)
+            }
+        } catch (e: Exception) {
+            Resource.Error(e.message ?: "Unexpected server error")
+        }
     }
 
-    suspend fun deleteExpense(id: UInt): Boolean {
+    suspend fun deleteExpense(id: UInt): Resource<Unit> {
         val call = backend.deleteExpense(id)
-        return call.isSuccessful
+        return try {
+            if (call.isSuccessful) {
+                Resource.Success(Unit)
+            } else {
+                val errorResponse = call.body()?.errorResponse ?: emptyList()
+                Resource.ErrorValidation(errorResponse)
+            }
+        } catch (e: Exception) {
+            Resource.Error(e.message ?: "Unexpected server error")
+        }
     }
 }

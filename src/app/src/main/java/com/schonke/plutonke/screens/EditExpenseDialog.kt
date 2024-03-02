@@ -21,6 +21,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -34,6 +35,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.schonke.plutonke.states.LoadDataState
 import com.schonke.plutonke.types.Category
+import java.io.IOException
+
+const val NAME_FIELD_ERR = "name"
+const val PRICE_FIELD_ERR = "price"
+const val DATE_FIELD_ERR = "date"
+const val CATEGORY_FIELD_ERR = "category"
+const val ID_FIELD_ERR = "id"
 
 @Composable
 fun EditExpenseDialog(
@@ -55,7 +63,20 @@ fun EditExpenseDialog(
     resetExpenseValidState: () -> Unit
 ) {
 
-    ExpenseValidation(expenseValidState, onDismiss, resetExpenseValidState)
+    val nameError = remember { mutableStateOf("") }
+    val priceError = remember { mutableStateOf("") }
+    val dateError = remember { mutableStateOf("") }
+    val categoryError = remember { mutableStateOf("") }
+
+    ExpenseValidation(
+        expenseValidState,
+        onDismiss,
+        resetExpenseValidState,
+        nameError,
+        priceError,
+        dateError,
+        categoryError
+    )
 
     Dialog(onDismissRequest = onDismiss) {
         Card() {
@@ -64,10 +85,15 @@ fun EditExpenseDialog(
                 verticalArrangement = Arrangement.SpaceEvenly
             ) {
                 AddExpenseHeadlineText(title)
-                AddExpenseNameField(expenseName) { onNameChanged(it) }
-                AddExpensePriceField(expensePrice) { onPriceChanged(it) }
-                AddExpenseDateField(expenseDate) { onDateChanged(it) }
-                AddExpenseCategoryField(expenseCategoryID, categories) { onCategoryChanged(it) }
+                AddExpenseNameField(expenseName, { newValue -> onNameChanged(newValue) }, nameError)
+                AddExpensePriceField(expensePrice, { onPriceChanged(it) }, priceError)
+                AddExpenseDateField(expenseDate, { onDateChanged(it) }, dateError)
+                AddExpenseCategoryField(
+                    expenseCategoryID,
+                    categories,
+                    { onCategoryChanged(it) },
+                    categoryError
+                )
                 AddExpenseFinalizeButtons(
                     onDismiss,
                     onConfirmPressed,
@@ -83,7 +109,11 @@ fun EditExpenseDialog(
 fun ExpenseValidation(
     expenseValidState: LoadDataState,
     onDismiss: () -> Unit,
-    resetExpenseValidState: () -> Unit
+    resetExpenseValidState: () -> Unit,
+    nameError: MutableState<String>,
+    priceError: MutableState<String>,
+    dateError: MutableState<String>,
+    categoryError: MutableState<String>
 ) {
 
     val context = LocalContext.current
@@ -97,6 +127,23 @@ fun ExpenseValidation(
         is LoadDataState.Error -> {
             Toast.makeText(context, expenseValidState.msg, Toast.LENGTH_SHORT).show()
             resetExpenseValidState()
+        }
+
+        is LoadDataState.ErrorValidating -> {
+            nameError.value = ""
+            priceError.value = ""
+            dateError.value = ""
+            categoryError.value = ""
+
+            expenseValidState.errors.forEach { error ->
+                when (error.field) {
+                    NAME_FIELD_ERR -> nameError.value = error.message
+                    PRICE_FIELD_ERR -> priceError.value = error.message
+                    DATE_FIELD_ERR -> dateError.value = error.message
+                    CATEGORY_FIELD_ERR -> categoryError.value = error.message
+                    ID_FIELD_ERR -> throw IOException("invalid id") //TODO: sacar
+                }
+            }
         }
     }
 }
@@ -168,15 +215,26 @@ private fun AddExpenseDismissButton(onDismiss: () -> Unit) {
 private fun AddExpenseCategoryField(
     expenseCategoryID: UInt,
     categories: List<Category>?,
-    onValueChange: (UInt) -> Unit
+    onValueChange: (UInt) -> Unit,
+    categoryError: MutableState<String>
 ) {
-    println(expenseCategoryID)
-    var currentCategory by remember { mutableStateOf(
+    var currentCategory by remember {
+        mutableStateOf(
             if (expenseCategoryID == 0U) "Category"
-            else categories?.find { it.id == expenseCategoryID }.toString())
+            else categories?.find { it.id == expenseCategoryID }?.name ?: "Category"
+        )
     }
     var isExpanded by remember { mutableStateOf(false) }
-    Box() {
+
+    Box {
+        // Muestra el mensaje de error si categoryError.value no está vacío
+        if (categoryError.value.isNotEmpty()) {
+            Text(
+                text = categoryError.value,
+                color = Color.Red,
+                modifier = Modifier.padding(top = 4.dp)
+            )
+        }
         ExposedDropdownMenuBox(expanded = isExpanded, onExpandedChange = { isExpanded = it }) {
             TextField(
                 value = currentCategory,
@@ -195,6 +253,7 @@ private fun AddExpenseCategoryField(
                             currentCategory = categoryName
                             onValueChange(category.id)
                             isExpanded = false
+                            categoryError.value = ""
                         })
                 }
             }
@@ -203,32 +262,52 @@ private fun AddExpenseCategoryField(
 }
 
 @Composable
-fun AddExpenseDateField(expenseDate: String, onValueChange: (String) -> Unit) {
+fun AddExpenseDateField(
+    expenseDate: String,
+    onValueChange: (String) -> Unit,
+    dateError: MutableState<String>
+) {
     OutlinedTextField(
         value = expenseDate,
         onValueChange = { onValueChange(it) },
         label = { Text("dd/mm/yyyy") },
+        isError = dateError.value.isNotEmpty(),
+        supportingText = { dateError.value.ifEmpty { null } }
     )
 }
 
 @Composable
-private fun AddExpensePriceField(expensePrice: String, onValueChange: (String) -> Unit) {
+private fun AddExpensePriceField(
+    expensePrice: String,
+    onValueChange: (String) -> Unit,
+    priceError: MutableState<String>
+) {
     OutlinedTextField(
         value = expensePrice,
         onValueChange = { onValueChange(it) },
         label = { Text("Price $") },
+        isError = priceError.value.isNotEmpty(),
+        supportingText = { priceError.value.ifEmpty { null } },
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
     )
 }
 
 @Composable
-private fun AddExpenseNameField(expenseName: String, onValueChange: (String) -> Unit) {
+fun AddExpenseNameField(
+    expenseName: String,
+    onNameChanged: (String) -> Unit,
+    nameError: MutableState<String>
+) {
     OutlinedTextField(
         value = expenseName,
-        onValueChange = { onValueChange(it) },
-        label = { Text("Name") }
+        onValueChange = onNameChanged,
+        label = { Text("Name") },
+        isError = nameError.value.isNotEmpty(),
+        supportingText = { nameError.value.ifEmpty { null } }
+//        helperText = if (nameError.value.isNotEmpty()) nameError.value else null
     )
 }
+
 
 @Composable
 private fun AddExpenseHeadlineText(text: String) {

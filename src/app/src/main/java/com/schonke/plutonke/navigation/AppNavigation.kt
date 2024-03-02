@@ -25,8 +25,9 @@ fun AppNavigation() {
 
     when(data){
         is LoadDataState.Loading -> LinearProgressIndicator()
-        is LoadDataState.Success -> { DrawerNavigation(dataViewModel = dataViewModel) } //chequear q pasa si pongo if de si esta vacia
+        is LoadDataState.Success -> { DrawerNavigation(dataViewModel = dataViewModel) } //TODO: chequear q pasa si pongo if de si esta vacia
         is LoadDataState.Error -> Text(text = "Error: ${(data as LoadDataState.Error).msg}")
+        is LoadDataState.ErrorValidating -> Text(text = "VALIDATION Error: ${(data as LoadDataState.Error).msg}")
     }
 }
 
