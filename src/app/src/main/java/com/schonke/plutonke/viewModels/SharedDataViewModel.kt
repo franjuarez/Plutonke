@@ -141,4 +141,48 @@ class SharedDataViewModel : ViewModel() {
             changeCategorySpentAmount(modifiedExpense.category, modifiedExpense.price)
         }
     }
+
+    fun modifyCategory(id: String, category: Category, _categoryValidState: MutableStateFlow<LoadDataState>) {
+        viewModelScope.launch(Dispatchers.IO) {
+            println("holaaaaaaSAAAAAAAAAAAAA")
+            val categories: MutableList<Category> =
+                (_sharedCategories.value ?: mutableListOf()).toMutableList()
+            val expenseIndex = categories.indexOfFirst { it.id == id }
+//            if (expenseIndex == -1) {
+//                isExpenseValid.value = LoadDataState.Error(
+//                    "Expense doess not exist!"
+//                )
+//                return@launch
+//            }
+            val oldCat = categories[expenseIndex]
+            val confirm = backend.editCategory(category)
+//            if (!confirm) {
+//                isExpenseValid.value = LoadDataState.Error(
+//                    "Could not edit expense"
+//                )
+//                return@launch
+//            }
+            modifyLocalCategory(oldCat, category)
+            categories[expenseIndex] = category
+            _sharedCategories.postValue(categories)
+            _categoryValidState.value = LoadDataState.Success("Category modified")
+        }
+    }
+
+    private fun modifyLocalCategory(
+        oldCat: Category,
+        modifiedCat: Category
+    ) {
+
+
+
+//        if (oldExpense.category == modifiedExpense.category) {
+//            val difference = modifiedExpense.price - oldExpense.price
+//            changeCategorySpentAmount(modifiedExpense.category, difference)
+//        } else {
+//            changeCategorySpentAmount(oldExpense.category, oldExpense.price * -1)
+//            changeCategorySpentAmount(modifiedExpense.category, modifiedExpense.price)
+//        }
+    }
+
 }

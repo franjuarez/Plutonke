@@ -137,24 +137,21 @@ fun EditCategoryOnClickDialog(
     onDismiss: () -> Unit,
     categories: List<Category>
 ) {
-    val expenseDate: String by categoriesViewModel.categoryName.observeAsState(initial = "")
-    val expenseName: String by categoriesViewModel.categorySpentAmount.observeAsState(initial = "")
-    val expensePrice: String by categoriesViewModel.categoryMaxAmount.observeAsState(initial = "")
+    val categoryName: String by categoriesViewModel.categoryName.observeAsState(initial = "")
+    val categoryMax: String by categoriesViewModel.categorySpentAmount.observeAsState(initial = "")
 
-    categoriesViewModel.onNameChanged(expenseName)
-    categoriesViewModel.onSpentAmountChanged(expenseDate)
-    categoriesViewModel.onMaxAmountChanged(expensePrice)
+    categoriesViewModel.onNameChanged(categoryName)
+    categoriesViewModel.onMaxAmountChanged(categoryMax)
 
-    val expenseValid by categoriesViewModel.categoryValidState.collectAsState()
+    val categoryValid by categoriesViewModel.categoryValidState.collectAsState()
 
     EditCategoryDialog(
         title = "Edit A Category",
         categories = categories,
-        expenseName = expenseName,
-        expensePrice = expensePrice,
-        expenseDate = expenseDate,
+        categoryName = categoryName,
+        categoryMax = categoryMax,
 
-        onNameChanged = {  categoriesViewModel.onCategoryNameChanged("jpkjljkl") },
+        onNameChanged = {  categoriesViewModel.onCategoryNameChanged("newname") },
         onMaxChanged = { categoriesViewModel.onMaxChanged("33") },
         onConfirmPressed = {
             categoriesViewModel.onModifiedPressed(selectedCategory.id) //Todo: cambiar a edit
@@ -163,8 +160,8 @@ fun EditCategoryOnClickDialog(
         showDeleteOption = true,
         onDeletePressed = { /*categoriesViewModel.onDeletePressed(selectedExpense.id)*/ },
         onDismiss = { onDismiss() },
-        expenseValidState = expenseValid,
-        resetExpenseValidState = { /*categoriesViewModel.resetExpenseValidState()*/ }
+        categoryValidState = categoryValid,
+        resetCategoryValidState = { /*categoriesViewModel.resetExpenseValidState()*/ }
     )
 }
 
@@ -172,17 +169,17 @@ fun EditCategoryOnClickDialog(
 fun EditCategoryDialog(
     title: String,
     categories: List<Category>,
-    expenseName: String,
-    expensePrice: String,
-    expenseDate: String,
+    categoryName: String,
+    categoryMax: String,
+
     onNameChanged: () -> Unit,
     onMaxChanged: () -> Unit,
     onConfirmPressed: () -> Unit,
     showDeleteOption: Boolean,
     onDeletePressed: () -> Unit,
     onDismiss: () -> Unit,
-    expenseValidState: LoadDataState,
-    resetExpenseValidState: () -> Unit
+    categoryValidState: LoadDataState,
+    resetCategoryValidState: () -> Unit
 ) {
     Dialog(onDismissRequest = onDismiss) {
         Card() {
@@ -195,12 +192,12 @@ fun EditCategoryDialog(
                     modifier = Modifier.padding(vertical = 10.dp)
                 )
                 OutlinedTextField(
-                    value = expenseName,
+                    value = categoryName,
                     onValueChange = { onNameChanged() },
                     label = { Text("Name") }
                 )
                 OutlinedTextField(
-                    value = expensePrice,
+                    value = categoryMax,
                     onValueChange = { onMaxChanged() },
                     label = { Text("Max $") },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
@@ -214,7 +211,14 @@ fun EditCategoryDialog(
                 ) {
                     Box(modifier = Modifier.width(IntrinsicSize.Min)) {
                         if (showDeleteOption) {
-                            AddExpenseDeleteButton(onDeletePressed)
+                            TextButton(
+                                onClick = {
+                                    onDeletePressed()
+                                },
+                                modifier = Modifier.padding(8.dp),
+                            ) {
+                                Text("Delete", color = Color.Red)
+                            }
                         } else {
                             Spacer(modifier = Modifier.matchParentSize())
                         }
@@ -232,7 +236,7 @@ fun EditCategoryDialog(
                         //AddExpenseConfirmButton(onConfirm)
                         TextButton(
                             onClick = {
-                                /*onConfirm()*/
+                                onConfirmPressed()
                             },
                             modifier = Modifier.padding(8.dp),
                         ) {
@@ -268,8 +272,8 @@ fun ShowAllCategories(categories: List<Category>, onCategoryClick: (Category) ->
             verticalArrangement = Arrangement.spacedBy(2.dp),
             modifier = Modifier.background(MaterialTheme.colorScheme.background)
         ) {
-            items(categories) { expense ->
-                ShowCategory(expense, onCategoryClick)
+            items(categories) { category ->
+                ShowCategory(category, onCategoryClick)
             }
         }
     }

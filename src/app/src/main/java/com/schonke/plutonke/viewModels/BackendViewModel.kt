@@ -44,4 +44,9 @@ class BackendViewModel : ViewModel() {
         val call = backend.deleteExpense(id)
         return call.isSuccessful
     }
+
+    suspend fun editCategory(category: Category): Any {
+        val call = backend.updateCategory(category.id, category)
+        return call.isSuccessful
+    }
 }
