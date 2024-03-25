@@ -129,12 +129,9 @@ class SharedDataViewModel : ViewModel() {
             when (val response = backend.addExpense(expense)) {
                 is Resource.Error -> {
                     isExpenseValid.value = LoadDataState.Error(SERVER_ERROR)
-                    println("debug: Server Error: ${response.message!!}")
                 }
-
                 is Resource.ErrorValidation -> isExpenseValid.value =
                     LoadDataState.ErrorValidating(response.errorResponse!!)
-
                 is Resource.Success -> {
                     val newExpense = response.data!!
                     val expenses: MutableList<Expense> =
@@ -152,16 +149,19 @@ class SharedDataViewModel : ViewModel() {
     fun removeExpense(id: UInt, isExpenseValid: MutableStateFlow<LoadDataState>) {
         viewModelScope.launch(Dispatchers.IO) {
             when (val response = backend.deleteExpense(id)) {
+                is Resource.Error -> {
+                    isExpenseValid.value = LoadDataState.Error(DELETE_EXPENSE_ERROR)
+                }
+                is Resource.ErrorValidation -> isExpenseValid.value =
+                    LoadDataState.ErrorValidating(response.errorResponse!!)
                 is Resource.Success -> {
                     val expenses: MutableList<Expense> =
                         (_sharedExpenses.value ?: mutableListOf()).toMutableList()
                     val expense = expenses.find { it.id == id }
-
                     if (expense == null) {
                         isExpenseValid.value = LoadDataState.Error(UNEXISTING_EXPENSE_ERROR)
                         return@launch
                     }
-
                     val categoryID = expense.categoryID
                     val price = expense.price * -1
                     expenses.remove(expense)
@@ -169,17 +169,9 @@ class SharedDataViewModel : ViewModel() {
                     changeCategorySpentAmount(categoryID, price)
                     isExpenseValid.value = LoadDataState.Success("Expense deleted")
                 }
-
-                is Resource.Error -> {
-                    isExpenseValid.value = LoadDataState.Error(DELETE_EXPENSE_ERROR)
-                }
-
-                is Resource.ErrorValidation -> isExpenseValid.value =
-                    LoadDataState.ErrorValidating(response.errorResponse!!)
             }
         }
     }
-
 
     @RequiresApi(Build.VERSION_CODES.O)
     fun modifyExpense(
@@ -195,21 +187,19 @@ class SharedDataViewModel : ViewModel() {
                 isExpenseValid.value = LoadDataState.Error(UNEXISTING_EXPENSE_ERROR)
                 return@launch
             }
-
-            val oldExpense = expenses[expenseIndex]
-
             when (val response = backend.editExpense(modifiedExpense)) {
-                is Resource.Success -> {
-                    modifyLocalExpense(oldExpense, modifiedExpense)
-                    expenses[expenseIndex] = modifiedExpense
-                    _sharedExpenses.postValue(expenses)
-                    isExpenseValid.value = LoadDataState.Success("Expense modified")
-                }
                 is Resource.Error -> {
                     isExpenseValid.value = LoadDataState.Error("Could not edit expense")
                 }
                 is Resource.ErrorValidation -> isExpenseValid.value =
                     LoadDataState.ErrorValidating(response.errorResponse!!)
+                is Resource.Success -> {
+                    val oldExpense = expenses[expenseIndex]
+                    modifyLocalExpense(oldExpense, modifiedExpense)
+                    expenses[expenseIndex] = modifiedExpense
+                    _sharedExpenses.postValue(expenses)
+                    isExpenseValid.value = LoadDataState.Success("Expense modified")
+                }
             }
         }
     }

@@ -1,16 +1,27 @@
 package com.schonke.plutonke.viewModels
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.schonke.plutonke.errors.ValidationError
+import com.schonke.plutonke.screens.CATEGORY_FIELD_ERR
+import com.schonke.plutonke.screens.DATE_FIELD_ERR
+import com.schonke.plutonke.screens.NAME_FIELD_ERR
+import com.schonke.plutonke.screens.PRICE_FIELD_ERR
 import com.schonke.plutonke.states.LoadDataState
-import com.schonke.plutonke.types.Category
 import com.schonke.plutonke.types.Expense
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 const val VALID_DATE_LENGTH = 10
 const val DATE_TOKEN = '/'
+const val REQUIERED_FIELD = "This field can't be empty!"
+const val INVALID_DATE = "Invalid date! Remember the format is dd/mm/YYYY"
+
 
 class ExpensesViewModel(
     private val dataViewModel: SharedDataViewModel,
@@ -43,13 +54,44 @@ class ExpensesViewModel(
         _expenseValidState.value = LoadDataState.Loading
     }
 
-    private fun expenseHasNoNullFields(): Boolean {
-        return !(_expenseName.value == null || _expensePrice.value == null ||
-                _expenseDate.value == null || _expenseCategoryID.value == null)
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun expenseHasInvalidFields(): Boolean {
+        return (_expenseName.value == null || _expenseName.value == "" ||
+                _expensePrice.value == null || _expensePrice.value == "" ||
+                _expenseDate.value == null || _expenseDate.value == "" ||
+                !isValidDate(_expenseDate.value ?: "") ||
+                _expenseCategoryID.value == null || _expenseCategoryID.value == 0U
+                )
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun showInvalidFieldError() {
+        val validationErrors = mutableListOf<ValidationError>()
+        if (_expenseName.value == null || _expenseName.value == "") {
+            val validationError = ValidationError(NAME_FIELD_ERR, REQUIERED_FIELD)
+            validationErrors.add(validationError)
+        }
+        if (_expensePrice.value == null || _expensePrice.value == "") {
+            val validationError = ValidationError(PRICE_FIELD_ERR, REQUIERED_FIELD)
+            validationErrors.add(validationError)
+        }
+        if (_expenseDate.value == null || _expenseDate.value == "") {
+            val validationError = ValidationError(DATE_FIELD_ERR, REQUIERED_FIELD)
+            validationErrors.add(validationError)
+        } else if (!isValidDate(_expenseDate.value ?: "")) {
+            val validationError = ValidationError(DATE_FIELD_ERR, INVALID_DATE)
+            validationErrors.add(validationError)
+        }
+        if (_expenseCategoryID.value == null || _expenseCategoryID.value == 0U) {
+            val validationError = ValidationError(CATEGORY_FIELD_ERR, REQUIERED_FIELD)
+            validationErrors.add(validationError)
+        }
+        _expenseValidState.value = LoadDataState.ErrorValidating(validationErrors)
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
     fun onConfirmPressed() {
-        if (expenseHasNoNullFields()) {
+        if (!expenseHasInvalidFields()) {
             val price = expensePrice.value?.replace(",", ".")
                 ?.toFloatOrNull() ?: 0.0f
             dataViewModel.addExpense(
@@ -61,11 +103,14 @@ class ExpensesViewModel(
                     expenseCategoryID.value!!
                 ), _expenseValidState
             )
+        } else {
+            showInvalidFieldError()
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     fun onModifiedPressed(id: UInt) {
-        if (expenseHasNoNullFields()) {
+        if (expenseHasInvalidFields()) {
             val price = expensePrice.value?.replace(",", ".")
                 ?.toFloatOrNull() ?: 0.0f
             dataViewModel.modifyExpense(
@@ -103,6 +148,20 @@ class ExpensesViewModel(
 
     fun onCategoryChanged(categoryID: UInt) {
         _expenseCategoryID.value = categoryID
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun isValidDate(date: String): Boolean {
+        if (date == "") {
+            return false
+        }
+        return try {
+            val formatter = DateTimeFormatter.ofPattern(DATE_FORMAT)
+            val localDate = LocalDate.parse(date, formatter)
+            !(!formatter.format(localDate).equals(date) || localDate > LocalDate.now())
+        } catch (e: Exception) {
+            false
+        }
     }
 
     private fun isFormingValidDate(date: String): Boolean {

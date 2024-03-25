@@ -17,31 +17,31 @@ const val SERVER_URL = "http://192.168.1.2:8080/" //Para celular
 
 interface Backend {
     @GET("expenses")
-    suspend fun getAllExpenses(): Response<List<Any>>
+    suspend fun getAllExpenses(): Response<List<ExpenseBackend>>
 
     @POST("expenses")
-    suspend fun addExpense(@Body expense: ExpenseBackend): Response<Any>
+    suspend fun addExpense(@Body expense: ExpenseBackend): Response<ExpenseBackend>
 
     @PUT("expenses/{id}")
     suspend fun updateExpense(
         @Path("id") expenseId: UInt,
         @Body expense: ExpenseBackend
-    ): Response<Resource<ExpenseBackend>>
+    ): Response<ExpenseBackend>
 
     @DELETE("expenses/{id}")
-    suspend fun deleteExpense(@Path("id") expenseId: UInt): Response<Resource<Unit>>
+    suspend fun deleteExpense(@Path("id") expenseId: UInt): Response<Unit>
 
     @GET("categories")
-    suspend fun getAllCategories(): Response<Any>
+    suspend fun getAllCategories(): Response<List<Category>>
 
     @PUT("categories/{id}")
     suspend fun updateCategory(
         @Path("id") categoryId: String,
         @Body category: Category
-    ): Response<Resource<Category>>
+    ): Response<Category>
 
     @DELETE("categories/{id}")
-    suspend fun deleteCategory(@Path("id") categoryId: String): Response<Resource<Unit>>
+    suspend fun deleteCategory(@Path("id") categoryId: String): Response<Unit>
 }
 
 object BackendFactory {

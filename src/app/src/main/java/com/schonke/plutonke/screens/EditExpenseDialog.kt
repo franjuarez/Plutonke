@@ -16,10 +16,12 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
@@ -118,7 +120,6 @@ fun ExpenseValidation(
 
     val context = LocalContext.current
     when (expenseValidState) {
-        is LoadDataState.Loading -> {}
         is LoadDataState.Success -> {
             Toast.makeText(context, expenseValidState.msg, Toast.LENGTH_SHORT).show()
             onDismiss()
@@ -145,6 +146,8 @@ fun ExpenseValidation(
                 }
             }
         }
+
+        is LoadDataState.Loading -> {}
     }
 }
 
@@ -227,36 +230,31 @@ private fun AddExpenseCategoryField(
     var isExpanded by remember { mutableStateOf(false) }
 
     Box {
-        // Muestra el mensaje de error si categoryError.value no está vacío
-        if (categoryError.value.isNotEmpty()) {
-            Text(
-                text = categoryError.value,
-                color = Color.Red,
-                modifier = Modifier.padding(top = 4.dp)
-            )
-        }
-        ExposedDropdownMenuBox(expanded = isExpanded, onExpandedChange = { isExpanded = it }) {
-            TextField(
-                value = currentCategory,
-                onValueChange = {},
-                readOnly = true,
-                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = isExpanded) },
-                colors = ExposedDropdownMenuDefaults.textFieldColors(),
-                modifier = Modifier.menuAnchor()
-            )
+        Column {
+            ExposedDropdownMenuBox(expanded = isExpanded, onExpandedChange = { isExpanded = it }) {
+                TextField(
+                    value = currentCategory,
+                    onValueChange = {},
+                    readOnly = true,
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = isExpanded) },
+                    colors = ExposedDropdownMenuDefaults.textFieldColors(),
+                    modifier = Modifier.menuAnchor()
+                )
 
-            ExposedDropdownMenu(expanded = isExpanded, onDismissRequest = { isExpanded = false }) {
-                categories?.forEach { category ->
-                    val categoryName = category.name
-                    DropdownMenuItem(text = { Text(text = categoryName) },
-                        onClick = {
-                            currentCategory = categoryName
-                            onValueChange(category.id)
-                            isExpanded = false
-                            categoryError.value = ""
-                        })
+                ExposedDropdownMenu(expanded = isExpanded, onDismissRequest = { isExpanded = false }) {
+                    categories?.forEach { category ->
+                        val categoryName = category.name
+                        DropdownMenuItem(text = { Text(text = categoryName) },
+                            onClick = {
+                                currentCategory = categoryName
+                                onValueChange(category.id)
+                                isExpanded = false
+                                categoryError.value = ""
+                            })
+                    }
                 }
             }
+            onErrorShowMessage(categoryError)
         }
     }
 }
@@ -267,13 +265,15 @@ fun AddExpenseDateField(
     onValueChange: (String) -> Unit,
     dateError: MutableState<String>
 ) {
-    OutlinedTextField(
-        value = expenseDate,
-        onValueChange = { onValueChange(it) },
-        label = { Text("dd/mm/yyyy") },
-        isError = dateError.value.isNotEmpty(),
-        supportingText = { dateError.value.ifEmpty { null } }
-    )
+    Column {
+        OutlinedTextField(
+            value = expenseDate,
+            onValueChange = { onValueChange(it) },
+            label = { Text("dd/mm/yyyy") },
+            isError = dateError.value.isNotEmpty(),
+        )
+        onErrorShowMessage(dateError)
+    }
 }
 
 @Composable
@@ -282,14 +282,16 @@ private fun AddExpensePriceField(
     onValueChange: (String) -> Unit,
     priceError: MutableState<String>
 ) {
-    OutlinedTextField(
-        value = expensePrice,
-        onValueChange = { onValueChange(it) },
-        label = { Text("Price $") },
-        isError = priceError.value.isNotEmpty(),
-        supportingText = { priceError.value.ifEmpty { null } },
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
-    )
+    Column {
+        OutlinedTextField(
+            value = expensePrice,
+            onValueChange = { onValueChange(it) },
+            label = { Text("Price $") },
+            isError = priceError.value.isNotEmpty(),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+        )
+        onErrorShowMessage(priceError)
+    }
 }
 
 @Composable
@@ -298,14 +300,27 @@ fun AddExpenseNameField(
     onNameChanged: (String) -> Unit,
     nameError: MutableState<String>
 ) {
-    OutlinedTextField(
-        value = expenseName,
-        onValueChange = onNameChanged,
-        label = { Text("Name") },
-        isError = nameError.value.isNotEmpty(),
-        supportingText = { nameError.value.ifEmpty { null } }
-//        helperText = if (nameError.value.isNotEmpty()) nameError.value else null
-    )
+    Column {
+        OutlinedTextField(
+            value = expenseName,
+            onValueChange = onNameChanged,
+            label = { Text("Name") },
+            isError = nameError.value.isNotEmpty()
+        )
+        onErrorShowMessage(nameError)
+    }
+}
+
+@Composable
+private fun onErrorShowMessage(error: MutableState<String>) {
+    if (error.value.isNotEmpty()) {
+        Text(
+            text = error.value,
+            color = MaterialTheme.colorScheme.error,
+            style = MaterialTheme.typography.labelMedium,
+            modifier = Modifier.padding(start = 2.dp, top = 4.dp, bottom = 4.dp)
+        )
+    }
 }
 
 

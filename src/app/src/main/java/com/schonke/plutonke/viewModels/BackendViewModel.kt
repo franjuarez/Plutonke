@@ -63,11 +63,11 @@ class BackendViewModel : ViewModel() {
         val result = call.body()
         return try {
             if (call.isSuccessful) {
-                val expensesBackend = fromJsonGeneric<List<ExpenseBackend>>(result.toString())
-                val expenses = expensesBackend.map { changeBackendExpenseToExpense(it) }
+                val expenses = result?.map { changeBackendExpenseToExpense(it) } ?: emptyList()
                 Resource.Success(expenses)
             } else {
-                val errorResponse = fromJsonGeneric<List<ValidationError>>(result.toString())
+                val errBody = call.errorBody()?.string() ?: ""
+                val errorResponse = fromJsonGeneric<List<ValidationError>>(errBody)
                 Resource.ErrorValidation(errorResponse)
             }
         } catch (e: Exception) {
@@ -80,10 +80,10 @@ class BackendViewModel : ViewModel() {
         val result = call.body()
         return try {
             if (call.isSuccessful) {
-                val categories = fromJsonGeneric<List<Category>>(result.toString())
-                Resource.Success(categories)
+                Resource.Success(result ?: emptyList())
             } else {
-                val errorResponse = fromJsonGeneric<List<ValidationError>>(result.toString())
+                val errBody = call.errorBody()?.string() ?: ""
+                val errorResponse = fromJsonGeneric<List<ValidationError>>(errBody)
                 Resource.ErrorValidation(errorResponse)
             }
         } catch (e: Exception) {
@@ -97,42 +97,37 @@ class BackendViewModel : ViewModel() {
         val result = call.body()
         return try {
             if (call.isSuccessful) {
-                val backendExpenseResponse = fromJsonGeneric<ExpenseBackend>(result.toString())
-                Resource.Success(changeBackendExpenseToExpense(backendExpenseResponse))
-//                val backendExpenseResponse = call.body()
-//                if (backendExpenseResponse?.data == null) {
-//                    Resource.Error("Unexpected server response")
-//                } else {
-//                    Resource.Success(changeBackendExpenseToExpense(backendExpenseResponse.data))
-//                }
+                if (result != null) {
+                    Resource.Success(changeBackendExpenseToExpense(result))
+                } else {
+                    println("debug: Server Error: addExpense result is NULL")
+                    Resource.Error(message = "Unexpected server response. Did not receive expense response")
+                }
             } else {
                 val errBody = call.errorBody()?.string() ?: ""
-                println(errBody)
-                val errorResponse = fromJsonGeneric<List<ValidationError>>(errBody!!)
-                println(errorResponse) //NULl!!!!!
+                val errorResponse = fromJsonGeneric<List<ValidationError>>(errBody)
                 Resource.ErrorValidation(errorResponse)
-//                val errorResponse = call.body()?.errorResponse ?: emptyList()
-//                Resource.ErrorValidation(errorResponse)
             }
         } catch (e: Exception) {
             Resource.Error(e.message ?: "Unexpected server error")
         }
     }
 
-
     suspend fun editExpense(expense: Expense): Resource<Expense> {
         val backendExpense = changeExpenseToBackendExpense(expense)
         val call = backend.updateExpense(expense.id, backendExpense)
+        val result = call.body()
         return try {
             if (call.isSuccessful) {
-                val backendExpenseResponse = call.body()
-                if (backendExpenseResponse?.data == null) {
-                    Resource.Error("Unexpected server response")
+                if (result != null) {
+                    Resource.Success(changeBackendExpenseToExpense(result))
                 } else {
-                    Resource.Success(changeBackendExpenseToExpense(backendExpenseResponse.data))
+                    println("debug: Server Error: editExpense result is NULL")
+                    Resource.Error("Unexpected server response")
                 }
             } else {
-                val errorResponse = call.body()?.errorResponse ?: emptyList()
+                val errBody = call.errorBody()?.string() ?: ""
+                val errorResponse = fromJsonGeneric<List<ValidationError>>(errBody)
                 Resource.ErrorValidation(errorResponse)
             }
         } catch (e: Exception) {
@@ -146,7 +141,8 @@ class BackendViewModel : ViewModel() {
             if (call.isSuccessful) {
                 Resource.Success(Unit)
             } else {
-                val errorResponse = call.body()?.errorResponse ?: emptyList()
+                val errBody = call.errorBody()?.string() ?: ""
+                val errorResponse = fromJsonGeneric<List<ValidationError>>(errBody)
                 Resource.ErrorValidation(errorResponse)
             }
         } catch (e: Exception) {
