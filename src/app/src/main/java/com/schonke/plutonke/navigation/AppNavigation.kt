@@ -10,11 +10,13 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.schonke.plutonke.screens.AllExpensesScreen
+import com.schonke.plutonke.screens.CategoriesScreen
 import com.schonke.plutonke.screens.ConfigurationScreen
 import com.schonke.plutonke.screens.HomeScreen
 import com.schonke.plutonke.states.LoadDataState
 import com.schonke.plutonke.viewModels.ExpensesViewModel
 import com.schonke.plutonke.viewModels.AllExpensesScreenViewModel
+import com.schonke.plutonke.viewModels.CategoriesScreenViewModel
 import com.schonke.plutonke.viewModels.HomeScreenViewModel
 import com.schonke.plutonke.viewModels.SharedDataViewModel
 
@@ -23,9 +25,12 @@ fun AppNavigation() {
     val dataViewModel = viewModel<SharedDataViewModel>()
     val data by dataViewModel.loadingState.collectAsState()
 
-    when(data){
+    when (data) {
         is LoadDataState.Loading -> LinearProgressIndicator()
-        is LoadDataState.Success -> { DrawerNavigation(dataViewModel = dataViewModel) } //TODO: chequear q pasa si pongo if de si esta vacia
+        is LoadDataState.Success -> {
+            DrawerNavigation(dataViewModel = dataViewModel)
+        }
+
         is LoadDataState.Error -> Text(text = "Error: ${(data as LoadDataState.Error).msg}")
         is LoadDataState.ErrorValidating -> Text(text = "VALIDATION Error: ${(data as LoadDataState.Error).msg}")
     }
@@ -37,30 +42,38 @@ private fun DrawerNavigation(dataViewModel: SharedDataViewModel) {
 
     Drawer(navController = navHostController) { navController, drawerProperties ->
         NavHost(navController = navController, startDestination = AppScreens.HomeScreen.route) {
-                composable(route = AppScreens.HomeScreen.route) {
-                    HomeScreen(
-                        navController = navController,
-                        drawerProperties = drawerProperties,
-                        homeScreenViewModel = HomeScreenViewModel(dataViewModel),
-                        expensesViewModel = ExpensesViewModel(dataViewModel)
-                    )
-                }
+            composable(route = AppScreens.HomeScreen.route) {
+                HomeScreen(
+                    navController = navController,
+                    drawerProperties = drawerProperties,
+                    homeScreenViewModel = HomeScreenViewModel(dataViewModel),
+                    expensesViewModel = ExpensesViewModel(dataViewModel)
+                )
+            }
 
-                composable(route = AppScreens.AllExpensesScreen.route) {
-                    AllExpensesScreen(
-                        navController = navController,
-                        drawerProperties = drawerProperties,
-                        allExpensesScreenViewModel = AllExpensesScreenViewModel(dataViewModel),
-                        expensesViewModel = ExpensesViewModel(dataViewModel)
-                    )
-                }
+            composable(route = AppScreens.AllExpensesScreen.route) {
+                AllExpensesScreen(
+                    navController = navController,
+                    drawerProperties = drawerProperties,
+                    allExpensesScreenViewModel = AllExpensesScreenViewModel(dataViewModel),
+                    expensesViewModel = ExpensesViewModel(dataViewModel)
+                )
+            }
 
-                composable(route = AppScreens.ConfigurationScreen.route) {
-                    ConfigurationScreen(
-                        navController = navController,
-                        drawerProperties = drawerProperties
-                    )
-                }
+            composable(route = AppScreens.ConfigurationScreen.route) {
+                ConfigurationScreen(
+                    navController = navController,
+                    drawerProperties = drawerProperties
+                )
+            }
+
+            composable(route = AppScreens.CategoriesScreen.route) {
+                CategoriesScreen(
+                    navController = navController,
+                    drawerProperties = drawerProperties,
+                    categoriesScreenViewModel = CategoriesScreenViewModel(dataViewModel)
+                )
             }
         }
     }
+}

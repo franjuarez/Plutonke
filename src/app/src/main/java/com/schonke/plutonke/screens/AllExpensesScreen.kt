@@ -110,7 +110,6 @@ fun AllExpensesScreenTopBar(drawerProperties: DrawerProperties) {
             }
         }
     )
-
 }
 
 @Composable

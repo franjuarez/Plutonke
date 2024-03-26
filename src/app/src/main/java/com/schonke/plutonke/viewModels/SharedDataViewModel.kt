@@ -73,7 +73,6 @@ class SharedDataViewModel : ViewModel() {
     private fun changeCategorySpentAmount(categoryID: UInt, amount: Float) {
         val category = _sharedCategories.value?.find { it.id == categoryID }
             ?: throw Exception("Error! Trying to change a Category that doesn't exist.") //TODO: Cambiar a error de app no q crashee
-
         category.spentAmount = category.spentAmount + amount
         dataUpdated.postValue(!dataUpdated.value!!)
     }

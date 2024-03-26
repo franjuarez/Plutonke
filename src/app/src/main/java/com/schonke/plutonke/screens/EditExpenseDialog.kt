@@ -142,7 +142,7 @@ fun ExpenseValidation(
                     PRICE_FIELD_ERR -> priceError.value = error.message
                     DATE_FIELD_ERR -> dateError.value = error.message
                     CATEGORY_FIELD_ERR -> categoryError.value = error.message
-                    ID_FIELD_ERR -> throw IOException("invalid id") //TODO: sacar
+                    ID_FIELD_ERR -> throw IOException("invalid id") //TODO: ver q hacer
                 }
             }
         }
