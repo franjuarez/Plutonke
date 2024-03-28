@@ -10,13 +10,14 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.schonke.plutonke.screens.AllExpensesScreen
-import com.schonke.plutonke.screens.CategoriesScreen
+import com.schonke.plutonke.screens.EditCategoriesScreen
 import com.schonke.plutonke.screens.ConfigurationScreen
 import com.schonke.plutonke.screens.HomeScreen
 import com.schonke.plutonke.states.LoadDataState
 import com.schonke.plutonke.viewModels.ExpensesViewModel
 import com.schonke.plutonke.viewModels.AllExpensesScreenViewModel
 import com.schonke.plutonke.viewModels.CategoriesScreenViewModel
+import com.schonke.plutonke.viewModels.CategoriesViewModel
 import com.schonke.plutonke.viewModels.HomeScreenViewModel
 import com.schonke.plutonke.viewModels.SharedDataViewModel
 
@@ -68,10 +69,11 @@ private fun DrawerNavigation(dataViewModel: SharedDataViewModel) {
             }
 
             composable(route = AppScreens.CategoriesScreen.route) {
-                CategoriesScreen(
+                EditCategoriesScreen(
                     navController = navController,
                     drawerProperties = drawerProperties,
-                    categoriesScreenViewModel = CategoriesScreenViewModel(dataViewModel)
+                    categoriesScreenViewModel = CategoriesScreenViewModel(dataViewModel),
+                    categoriesViewModel = CategoriesViewModel()
                 )
             }
         }

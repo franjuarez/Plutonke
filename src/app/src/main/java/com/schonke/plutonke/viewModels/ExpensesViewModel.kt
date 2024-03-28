@@ -6,10 +6,10 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.schonke.plutonke.errors.ValidationError
-import com.schonke.plutonke.screens.CATEGORY_FIELD_ERR
-import com.schonke.plutonke.screens.DATE_FIELD_ERR
-import com.schonke.plutonke.screens.NAME_FIELD_ERR
-import com.schonke.plutonke.screens.PRICE_FIELD_ERR
+import com.schonke.plutonke.screens.EXPENSE_CATEGORY_FIELD_ERR
+import com.schonke.plutonke.screens.EXPENSE_DATE_FIELD_ERR
+import com.schonke.plutonke.screens.EXPENSE_NAME_FIELD_ERR
+import com.schonke.plutonke.screens.EXPENSE_PRICE_FIELD_ERR
 import com.schonke.plutonke.states.LoadDataState
 import com.schonke.plutonke.types.Expense
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -17,10 +17,10 @@ import kotlinx.coroutines.flow.StateFlow
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
-const val VALID_DATE_LENGTH = 10
-const val DATE_TOKEN = '/'
-const val REQUIERED_FIELD = "This field can't be empty!"
-const val INVALID_DATE = "Invalid date! Remember the format is dd/mm/YYYY"
+private const val VALID_DATE_LENGTH = 10
+private const val DATE_TOKEN = '/'
+private const val REQUIERED_FIELD = "This field can't be empty!"
+private const val INVALID_DATE = "Invalid date! Remember the format is dd/mm/YYYY"
 
 
 class ExpensesViewModel(
@@ -68,22 +68,22 @@ class ExpensesViewModel(
     private fun showInvalidFieldError() {
         val validationErrors = mutableListOf<ValidationError>()
         if (_expenseName.value == null || _expenseName.value == "") {
-            val validationError = ValidationError(NAME_FIELD_ERR, REQUIERED_FIELD)
+            val validationError = ValidationError(EXPENSE_NAME_FIELD_ERR, REQUIERED_FIELD)
             validationErrors.add(validationError)
         }
         if (_expensePrice.value == null || _expensePrice.value == "") {
-            val validationError = ValidationError(PRICE_FIELD_ERR, REQUIERED_FIELD)
+            val validationError = ValidationError(EXPENSE_PRICE_FIELD_ERR, REQUIERED_FIELD)
             validationErrors.add(validationError)
         }
         if (_expenseDate.value == null || _expenseDate.value == "") {
-            val validationError = ValidationError(DATE_FIELD_ERR, REQUIERED_FIELD)
+            val validationError = ValidationError(EXPENSE_DATE_FIELD_ERR, REQUIERED_FIELD)
             validationErrors.add(validationError)
         } else if (!isValidDate(_expenseDate.value ?: "")) {
-            val validationError = ValidationError(DATE_FIELD_ERR, INVALID_DATE)
+            val validationError = ValidationError(EXPENSE_DATE_FIELD_ERR, INVALID_DATE)
             validationErrors.add(validationError)
         }
         if (_expenseCategoryID.value == null || _expenseCategoryID.value == 0U) {
-            val validationError = ValidationError(CATEGORY_FIELD_ERR, REQUIERED_FIELD)
+            val validationError = ValidationError(EXPENSE_CATEGORY_FIELD_ERR, REQUIERED_FIELD)
             validationErrors.add(validationError)
         }
         _expenseValidState.value = LoadDataState.ErrorValidating(validationErrors)

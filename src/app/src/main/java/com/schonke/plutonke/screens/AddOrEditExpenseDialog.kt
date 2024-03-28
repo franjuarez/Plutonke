@@ -21,7 +21,6 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
@@ -39,14 +38,14 @@ import com.schonke.plutonke.states.LoadDataState
 import com.schonke.plutonke.types.Category
 import java.io.IOException
 
-const val NAME_FIELD_ERR = "name"
-const val PRICE_FIELD_ERR = "price"
-const val DATE_FIELD_ERR = "date"
-const val CATEGORY_FIELD_ERR = "category"
-const val ID_FIELD_ERR = "id"
+const val EXPENSE_NAME_FIELD_ERR = "name"
+const val EXPENSE_PRICE_FIELD_ERR = "price"
+const val EXPENSE_DATE_FIELD_ERR = "date"
+const val EXPENSE_CATEGORY_FIELD_ERR = "category"
+const val EXPENSE_ID_FIELD_ERR = "id"
 
 @Composable
-fun EditExpenseDialog(
+fun AddOrEditExpenseDialog(
     title: String,
     categories: List<Category>?,
     expenseName: String,
@@ -87,7 +86,7 @@ fun EditExpenseDialog(
                 verticalArrangement = Arrangement.SpaceEvenly
             ) {
                 AddExpenseHeadlineText(title)
-                AddExpenseNameField(expenseName, { newValue -> onNameChanged(newValue) }, nameError)
+                AddExpenseNameField(expenseName, { onNameChanged(it) }, nameError)
                 AddExpensePriceField(expensePrice, { onPriceChanged(it) }, priceError)
                 AddExpenseDateField(expenseDate, { onDateChanged(it) }, dateError)
                 AddExpenseCategoryField(
@@ -138,11 +137,11 @@ fun ExpenseValidation(
 
             expenseValidState.errors.forEach { error ->
                 when (error.field) {
-                    NAME_FIELD_ERR -> nameError.value = error.message
-                    PRICE_FIELD_ERR -> priceError.value = error.message
-                    DATE_FIELD_ERR -> dateError.value = error.message
-                    CATEGORY_FIELD_ERR -> categoryError.value = error.message
-                    ID_FIELD_ERR -> throw IOException("invalid id") //TODO: ver q hacer
+                    EXPENSE_NAME_FIELD_ERR -> nameError.value = error.message
+                    EXPENSE_PRICE_FIELD_ERR -> priceError.value = error.message
+                    EXPENSE_DATE_FIELD_ERR -> dateError.value = error.message
+                    EXPENSE_CATEGORY_FIELD_ERR -> categoryError.value = error.message
+                    EXPENSE_ID_FIELD_ERR -> throw IOException("invalid id") //TODO: ver q hacer
                 }
             }
         }

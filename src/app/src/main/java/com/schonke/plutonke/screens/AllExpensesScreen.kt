@@ -131,7 +131,7 @@ fun EditExpenseOnClickDialog(
 
     val expenseValid by expensesViewModel.expenseValidState.collectAsState()
 
-    EditExpenseDialog(
+    AddOrEditExpenseDialog(
         title = "Edit an expense",
         categories = categories,
         expenseName = expenseName,
