@@ -73,7 +73,7 @@ private fun DrawerNavigation(dataViewModel: SharedDataViewModel) {
                     navController = navController,
                     drawerProperties = drawerProperties,
                     categoriesScreenViewModel = CategoriesScreenViewModel(dataViewModel),
-                    categoriesViewModel = CategoriesViewModel()
+                    categoriesViewModel = CategoriesViewModel(dataViewModel)
                 )
             }
         }

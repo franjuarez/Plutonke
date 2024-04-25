@@ -31,6 +31,7 @@ import com.schonke.plutonke.states.LoadDataState
 
 const val CATEGORY_NAME_FIELD_ERR = "name"
 const val CATEGORY_MAX_AMOUNT_FIELD_ERR = "maxAmount"
+const val CATEGORY_HAS_EXPENSES_ERR = "category has expenses"
 
 @Composable
 fun AddOrEditCategoryDialog(
@@ -105,8 +106,9 @@ fun CategoryValidation(
 
             categoryValidState.errors.forEach { error ->
                 when (error.field) {
-                    EXPENSE_NAME_FIELD_ERR -> nameError.value = error.message
+                    CATEGORY_NAME_FIELD_ERR -> nameError.value = error.message
                     CATEGORY_MAX_AMOUNT_FIELD_ERR -> maxAmountError.value = error.message
+                    CATEGORY_HAS_EXPENSES_ERR -> Toast.makeText(context, error.message, Toast.LENGTH_SHORT).show()
                 }
             }
         }
@@ -204,7 +206,7 @@ fun AddCategoryNameField(
     Column {
         OutlinedTextField(
             value = categoryName,
-            onValueChange = onNameChanged,
+            onValueChange = { onNameChanged(it) },
             label = { Text("Name") },
             isError = nameError.value.isNotEmpty()
         )

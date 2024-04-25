@@ -141,7 +141,7 @@ fun ExpenseValidation(
                     EXPENSE_PRICE_FIELD_ERR -> priceError.value = error.message
                     EXPENSE_DATE_FIELD_ERR -> dateError.value = error.message
                     EXPENSE_CATEGORY_FIELD_ERR -> categoryError.value = error.message
-                    EXPENSE_ID_FIELD_ERR -> throw IOException("invalid id") //TODO: ver q hacer
+                    EXPENSE_ID_FIELD_ERR -> throw IOException("invalid id")
                 }
             }
         }
@@ -302,7 +302,7 @@ fun AddExpenseNameField(
     Column {
         OutlinedTextField(
             value = expenseName,
-            onValueChange = onNameChanged,
+            onValueChange = { onNameChanged(it) },
             label = { Text("Name") },
             isError = nameError.value.isNotEmpty()
         )

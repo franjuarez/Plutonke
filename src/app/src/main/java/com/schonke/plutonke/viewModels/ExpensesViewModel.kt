@@ -110,7 +110,7 @@ class ExpensesViewModel(
 
     @RequiresApi(Build.VERSION_CODES.O)
     fun onModifiedPressed(id: UInt) {
-        if (expenseHasInvalidFields()) {
+        if (!expenseHasInvalidFields()) {
             val price = expensePrice.value?.replace(",", ".")
                 ?.toFloatOrNull() ?: 0.0f
             dataViewModel.modifyExpense(
@@ -123,6 +123,8 @@ class ExpensesViewModel(
                 ),
                 _expenseValidState
             )
+        } else {
+            showInvalidFieldError()
         }
     }
 

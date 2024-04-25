@@ -58,8 +58,7 @@ fun HomeScreen(
     val categories by homeScreenViewModel.sharedCategories.observeAsState()
     val dataUpdated by homeScreenViewModel.dataUpdated.observeAsState()
 
-    if (dataUpdated == true) {/*For recomposition*/
-    }
+    if (dataUpdated == true) {/*For recomposition*/ }
 
 
     Scaffold(
@@ -75,9 +74,9 @@ fun HomeScreen(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreenTopBar(drawerProperties: DrawerProperties) {
+private fun HomeScreenTopBar(drawerProperties: DrawerProperties) {
     TopAppBar(
-        title = { Text(text = "Plutonke 🤑 🤑 🤑") },
+        title = { Text(text = "Plutonke") },
         colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background),
         navigationIcon = {
             IconButton(onClick = {
@@ -95,7 +94,7 @@ fun HomeScreenTopBar(drawerProperties: DrawerProperties) {
 }
 
 @Composable
-fun HomeScreenAddExpenseButton(expensesViewModel: ExpensesViewModel, categories: List<Category>?) {
+private fun HomeScreenAddExpenseButton(expensesViewModel: ExpensesViewModel, categories: List<Category>?) {
     var isDialogVisible by remember { mutableStateOf(false) }
 
     ExtendedFloatingActionButton(
@@ -136,7 +135,7 @@ fun HomeScreenAddExpenseButton(expensesViewModel: ExpensesViewModel, categories:
 }
 
 @Composable
-fun ShowCategories(categories: List<Category>) {
+private fun ShowCategories(categories: List<Category>) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -180,7 +179,7 @@ private fun CategoriesHeadlineText(modifier: Modifier) {
 }
 
 @Composable
-fun ShowCategory(category: Category) {
+private fun ShowCategory(category: Category) {
     Column(modifier = Modifier.fillMaxSize()) {
         Spacer(modifier = Modifier.height(6.dp))
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {

@@ -15,46 +15,8 @@ import java.lang.Exception
 import java.text.SimpleDateFormat
 import java.util.Date
 
-const val DATE_FORMAT = "dd/MM/yyyy"
-
-@SuppressLint("SimpleDateFormat")
-fun convertUnixTimestampToDate(unixTimestamp: Long): String {
-    val date = Date(unixTimestamp * 1000)
-    val format = SimpleDateFormat(DATE_FORMAT)
-    return format.format(date)
-}
-
-@SuppressLint("SimpleDateFormat")
-fun convertDateToUnixTimestamp(dateString: String): Long {
-    val format = SimpleDateFormat(DATE_FORMAT)
-    val date = format.parse(dateString) ?: throw IOException("error converting date")
-    return date.time / 1000
-}
-
-fun changeExpenseToBackendExpense(expense: Expense): ExpenseBackend {
-    return ExpenseBackend(
-        expense.id,
-        expense.name,
-        convertDateToUnixTimestamp(expense.date),
-        expense.price,
-        expense.categoryID
-    )
-}
-
-private fun changeBackendExpenseToExpense(expenseBackend: ExpenseBackend): Expense {
-    return Expense(
-        expenseBackend.id,
-        expenseBackend.name,
-        convertUnixTimestampToDate(expenseBackend.date),
-        expenseBackend.price,
-        expenseBackend.categoryID
-    )
-}
-
-inline fun <reified T> fromJsonGeneric(json: String): T {
-    val type = object : TypeToken<T>() {}.type
-    return Gson().fromJson(json, type)
-}
+const val UNEXPECTED_SERVER_ERROR = "Unexpected server error"
+private const val EMPTY_CATEGORY_SERVER_RESPONSE = "Unexpected server response. Did not receive category response"
 
 class BackendViewModel : ViewModel() {
     private val backend = BackendFactory.getInstance()
@@ -71,7 +33,7 @@ class BackendViewModel : ViewModel() {
                 Resource.ErrorValidation(errorResponse)
             }
         } catch (e: Exception) {
-            Resource.Error(e.message ?: "Unexpected server error")
+            Resource.Error(e.message ?: UNEXPECTED_SERVER_ERROR)
         }
     }
 
@@ -87,7 +49,7 @@ class BackendViewModel : ViewModel() {
                 Resource.ErrorValidation(errorResponse)
             }
         } catch (e: Exception) {
-            Resource.Error(e.message ?: "Unexpected server error")
+            Resource.Error(e.message ?: UNEXPECTED_SERVER_ERROR)
         }
     }
 
@@ -100,7 +62,7 @@ class BackendViewModel : ViewModel() {
                 if (result != null) {
                     Resource.Success(changeBackendExpenseToExpense(result))
                 } else {
-                    println("debug: Server Error: addExpense result is NULL")
+                    println("[#Debug]: Server Error: addExpense result is NULL")
                     Resource.Error(message = "Unexpected server response. Did not receive expense response")
                 }
             } else {
@@ -109,12 +71,13 @@ class BackendViewModel : ViewModel() {
                 Resource.ErrorValidation(errorResponse)
             }
         } catch (e: Exception) {
-            Resource.Error(e.message ?: "Unexpected server error")
+            Resource.Error(e.message ?: UNEXPECTED_SERVER_ERROR)
         }
     }
 
     suspend fun editExpense(expense: Expense): Resource<Expense> {
         val backendExpense = changeExpenseToBackendExpense(expense)
+        println("Gasto con el q llamo a updateExpense: $backendExpense")
         val call = backend.updateExpense(expense.id, backendExpense)
         val result = call.body()
         return try {
@@ -122,7 +85,7 @@ class BackendViewModel : ViewModel() {
                 if (result != null) {
                     Resource.Success(changeBackendExpenseToExpense(result))
                 } else {
-                    println("debug: Server Error: editExpense result is NULL")
+                    println("[#Debug]: Server Error: editExpense result is NULL")
                     Resource.Error("Unexpected server response")
                 }
             } else {
@@ -131,7 +94,7 @@ class BackendViewModel : ViewModel() {
                 Resource.ErrorValidation(errorResponse)
             }
         } catch (e: Exception) {
-            Resource.Error(e.message ?: "Unexpected server error")
+            Resource.Error(e.message ?: UNEXPECTED_SERVER_ERROR)
         }
     }
 
@@ -146,7 +109,64 @@ class BackendViewModel : ViewModel() {
                 Resource.ErrorValidation(errorResponse)
             }
         } catch (e: Exception) {
-            Resource.Error(e.message ?: "Unexpected server error")
+            Resource.Error(e.message ?: UNEXPECTED_SERVER_ERROR)
+        }
+    }
+
+    suspend fun addCategory(category: Category): Resource<Category> {
+        val call = backend.addCategory(category)
+        val result = call.body()
+        return try {
+            if (call.isSuccessful) {
+                if (result != null) {
+                    Resource.Success(result)
+                } else {
+//                    println("[#Debug]: Server Error: addCategory result is NULL")
+                    Resource.Error(message = EMPTY_CATEGORY_SERVER_RESPONSE)
+                }
+            } else {
+                val errBody = call.errorBody()?.string() ?: ""
+                val errorResponse = fromJsonGeneric<List<ValidationError>>(errBody)
+                Resource.ErrorValidation(errorResponse)
+            }
+        } catch (e: Exception) {
+            Resource.Error(e.message ?: UNEXPECTED_SERVER_ERROR)
+        }
+    }
+
+    suspend fun editCategory(category: Category): Resource<Category> {
+        val call = backend.updateCategory(category.id, category)
+        val result = call.body()
+        return try {
+            if (call.isSuccessful) {
+                if (result != null) {
+                    Resource.Success(result)
+                } else {
+//                    println("[#Debug]: Server Error: editExpense result is NULL")
+                    Resource.Error(EMPTY_CATEGORY_SERVER_RESPONSE)
+                }
+            } else {
+                val errBody = call.errorBody()?.string() ?: ""
+                val errorResponse = fromJsonGeneric<List<ValidationError>>(errBody)
+                Resource.ErrorValidation(errorResponse)
+            }
+        } catch (e: Exception) {
+            Resource.Error(e.message ?: UNEXPECTED_SERVER_ERROR)
+        }
+    }
+
+    suspend fun deleteCategory(id: UInt): Resource<Unit> {
+        val call = backend.deleteCategory(id)
+        return try {
+            if (call.isSuccessful) {
+                Resource.Success(Unit)
+            } else {
+                val errBody = call.errorBody()?.string() ?: ""
+                val errorResponse = fromJsonGeneric<List<ValidationError>>(errBody)
+                Resource.ErrorValidation(errorResponse)
+            }
+        } catch (e: Exception) {
+            Resource.Error(e.message ?: UNEXPECTED_SERVER_ERROR)
         }
     }
 }

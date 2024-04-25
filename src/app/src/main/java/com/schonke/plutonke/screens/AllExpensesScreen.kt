@@ -1,6 +1,8 @@
 package com.schonke.plutonke.screens
 
 import android.annotation.SuppressLint
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -48,7 +50,9 @@ import com.schonke.plutonke.viewModels.AllExpensesScreenViewModel
 import com.schonke.plutonke.viewModels.ExpensesViewModel
 import kotlinx.coroutines.launch
 import java.io.IOException
+import kotlin.math.exp
 
+@RequiresApi(Build.VERSION_CODES.O)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun AllExpensesScreen(
@@ -72,20 +76,25 @@ fun AllExpensesScreen(
                 .padding(innerPadding)
                 .fillMaxSize()
         ) {
+            ShowAllExpenses(expenses ?: emptyList(), categories ?: emptyList()) { clickedExpense ->
+                isDialogVisible = true
+                selectedExpense = clickedExpense
+                expensesViewModel.resetExpenseValidState()
+                expensesViewModel.onNameChanged(clickedExpense.name)
+                expensesViewModel.onDateChanged(clickedExpense.date)
+                expensesViewModel.onPriceChanged(clickedExpense.price.toString())
+                expensesViewModel.onCategoryChanged(clickedExpense.categoryID)
+
+            }
             if (isDialogVisible) {
                 EditExpenseOnClickDialog(
                     expensesViewModel,
                     selectedExpense!!,
                     onDismiss = {
                         isDialogVisible = false
-                        expensesViewModel.resetExpense()
                     },
                     categories ?: emptyList()
                 )
-            }
-            ShowAllExpenses(expenses ?: emptyList(), categories ?: emptyList()) { clickedExpense ->
-                selectedExpense = clickedExpense
-                isDialogVisible = true
             }
         }
     }
@@ -112,6 +121,7 @@ fun AllExpensesScreenTopBar(drawerProperties: DrawerProperties) {
     )
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun EditExpenseOnClickDialog(
     expensesViewModel: ExpensesViewModel,
@@ -124,12 +134,8 @@ fun EditExpenseOnClickDialog(
     val expensePrice: String by expensesViewModel.expensePrice.observeAsState(initial = selectedExpense.price.toString())
     val expenseCategory: UInt by expensesViewModel.expenseCategoryID.observeAsState(initial = selectedExpense.categoryID)
 
-    expensesViewModel.onNameChanged(expenseName)
-    expensesViewModel.onDateChanged(expenseDate)
-    expensesViewModel.onPriceChanged(expensePrice)
-    expensesViewModel.onCategoryChanged(expenseCategory)
-
     val expenseValid by expensesViewModel.expenseValidState.collectAsState()
+//    println("En edit expense dialog, validstate: $expenseValid")
 
     AddOrEditExpenseDialog(
         title = "Edit an expense",

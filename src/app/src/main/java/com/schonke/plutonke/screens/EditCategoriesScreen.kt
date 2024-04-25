@@ -3,7 +3,6 @@ package com.schonke.plutonke.screens
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -38,18 +37,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.schonke.plutonke.navigation.DrawerProperties
 import com.schonke.plutonke.types.Category
-import com.schonke.plutonke.types.Expense
 import com.schonke.plutonke.viewModels.CategoriesScreenViewModel
 import com.schonke.plutonke.viewModels.CategoriesViewModel
-import com.schonke.plutonke.viewModels.ExpensesViewModel
 import kotlinx.coroutines.launch
-import java.io.IOException
 
 @Composable
 fun EditCategoriesScreen(
@@ -61,8 +56,7 @@ fun EditCategoriesScreen(
 
     val categories = categoriesScreenViewModel.sharedCategories.value
     val dataUpdated by categoriesScreenViewModel.dataUpdated.observeAsState()
-    if (dataUpdated == true) {/*For recomposition*/
-    }
+    if (dataUpdated == true) { /*For recomposition*/}
 
     var isEditCategoryDialogVisible by remember { mutableStateOf(false) }
     var selectedCategory by remember { mutableStateOf<Category?>(null) }
@@ -75,21 +69,19 @@ fun EditCategoriesScreen(
                 .padding(innerPadding)
                 .fillMaxSize()
         ) {
+            ShowAllCategories(categories ?: emptyList()) { clickedCategory ->
+                selectedCategory = clickedCategory
+                categoriesViewModel.resetCategoryValidState()
+                isEditCategoryDialogVisible = true
+                categoriesViewModel.onNameChanged(clickedCategory.name)
+                categoriesViewModel.onMaxAmountChanged(clickedCategory.maxAmount.toString())
+            }
             if (isEditCategoryDialogVisible) {
-//                EditExpenseOnClickDialog(
-//                    expensesViewModel,
-//                    selectedExpense!!,
-//                    onDismiss = {
-//                        isDialogVisible = false
-//                        expensesViewModel.resetExpense()
-//                    },
-//                    categories ?: emptyList()
-//                )
-            } else {
-                ShowAllEditCategories(categories ?: emptyList()) { clickedCategory ->
-                    selectedCategory = clickedCategory
-                    isEditCategoryDialogVisible = true
-                }
+                EditCategoryOnClickDialog(
+                    categoriesViewModel = categoriesViewModel,
+                    selectedCategory = selectedCategory!!,
+                    onDismiss = { isEditCategoryDialogVisible = false }
+                )
             }
         }
     }
@@ -105,40 +97,28 @@ fun EditCategoriesAddCategoryButton(categoriesViewModel: CategoriesViewModel) {
         onClick = { isAddCategoryDialogVisible = true }
     )
 
-//    val expenseName: String by expensesViewModel.expenseName.observeAsState(initial = "")
-//    val expenseDate: String by expensesViewModel.expenseDate.observeAsState(initial = "")
-//    val expensePrice: String by expensesViewModel.expensePrice.observeAsState(initial = "")
-//    val expenseCategoryID: UInt by expensesViewModel.expenseCategoryID.observeAsState(initial = 0U)
-//    val expenseValid by expensesViewModel.expenseValidState.collectAsState()
+    val categoryName: String by categoriesViewModel.categoryName.observeAsState(initial = "")
+    val categoryMaxAmount: String by categoriesViewModel.categoryMaxAmount.observeAsState(initial = "")
+    val categoryValid by categoriesViewModel.categoryValidState.collectAsState()
 
     if (isAddCategoryDialogVisible) {
 
-//        EditExpenseDialog(
-//            title = "Add an expense",
-//            expenseName = expenseName,
-//            expensePrice = expensePrice,
-//            expenseDate = expenseDate,
-//            expenseCategoryID = expenseCategoryID,
-//            categories = categories,
-//            onNameChanged = { expensesViewModel.onNameChanged(it) },
-//            onPriceChanged = { expensesViewModel.onPriceChanged(it) },
-//            onDateChanged = { expensesViewModel.onDateChanged(it) },
-//            onCategoryChanged = { expensesViewModel.onCategoryChanged(it) },
-//            onConfirmPressed = {
-//                expensesViewModel.onConfirmPressed()
-//            },
-//            onDismiss = {
-//                isDialogVisible = false
-//                expensesViewModel.resetExpense()
-//            },
-//            expenseValidState = expenseValid,
-//            resetExpenseValidState = { expensesViewModel.resetExpenseValidState() }
-//        )
+        AddOrEditCategoryDialog(
+            title = "Add a category",
+            categoryName = categoryName,
+            categoryMaxAmount = categoryMaxAmount,
+            onNameChanged = { categoriesViewModel.onNameChanged(it) },
+            onMaxAmountChanged = { categoriesViewModel.onMaxAmountChanged(it) },
+            onConfirmPressed = { categoriesViewModel.onConfirmPressed() },
+            onDismiss = { isAddCategoryDialogVisible = false; categoriesViewModel.resetCategory() },
+            categoryValidState = categoryValid,
+            resetCategoryValidState = { categoriesViewModel.resetCategoryValidState() }
+        )
     }
 }
 
 @Composable
-fun ShowAllEditCategories(categories: List<Category>, onCategoryClick: (Category) -> Unit) {
+private fun ShowAllCategories(categories: List<Category>, onCategoryClick: (Category) -> Unit) {
     if (categories.isEmpty()) {
         Box(
             modifier = Modifier.fillMaxSize(),
@@ -156,7 +136,7 @@ fun ShowAllEditCategories(categories: List<Category>, onCategoryClick: (Category
             modifier = Modifier.background(MaterialTheme.colorScheme.background)
         ) {
             items(categories) { category ->
-                ShowEditCategory(category, onCategoryClick)
+                ShowCategory(category, onCategoryClick)
             }
         }
     }
@@ -164,7 +144,7 @@ fun ShowAllEditCategories(categories: List<Category>, onCategoryClick: (Category
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ShowEditCategory(category: Category, onCategoryClick: (Category) -> Unit) {
+private fun ShowCategory(category: Category, onCategoryClick: (Category) -> Unit) {
     ElevatedCard(
         shape = RoundedCornerShape(10.dp),
         modifier = Modifier
@@ -198,15 +178,9 @@ fun ShowEditCategory(category: Category, onCategoryClick: (Category) -> Unit) {
     }
 }
 
-
-//@Composable
-//fun ShowEditCategory(category: Category) {
-//    Text(text = "name: " + category.name + "Spent Amount: " + category.spentAmount + "Max Amount: " + category.maxAmount)
-//}
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EditCategoriesScreenTopBar(drawerProperties: DrawerProperties) {
+private fun EditCategoriesScreenTopBar(drawerProperties: DrawerProperties) {
     TopAppBar(
         title = { Text(text = "Categories") },
         colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background),
@@ -222,5 +196,31 @@ fun EditCategoriesScreenTopBar(drawerProperties: DrawerProperties) {
                 )
             }
         }
+    )
+}
+
+@Composable
+fun EditCategoryOnClickDialog(
+    categoriesViewModel: CategoriesViewModel,
+    selectedCategory: Category,
+    onDismiss: () -> Unit
+) {
+    val categoryName: String by categoriesViewModel.categoryName.observeAsState(initial = selectedCategory.name)
+    val categoryMaxAmount: String by categoriesViewModel.categoryMaxAmount.observeAsState(initial = selectedCategory.maxAmount.toString())
+
+    val categoryValid by categoriesViewModel.categoryValidState.collectAsState()
+
+    AddOrEditCategoryDialog(
+        title = "Edit a Category",
+        categoryName = categoryName,
+        categoryMaxAmount = categoryMaxAmount,
+        onNameChanged = { categoriesViewModel.onNameChanged(it) },
+        onMaxAmountChanged = { categoriesViewModel.onMaxAmountChanged(it) },
+        onConfirmPressed = { categoriesViewModel.onModifiedPressed(selectedCategory.id);  onDismiss() },
+        onDismiss = { onDismiss() },
+        categoryValidState = categoryValid,
+        showDeleteOption = true,
+        onDeletePressed = { categoriesViewModel.onDeletePressed(selectedCategory.id) },
+        resetCategoryValidState = { categoriesViewModel.resetCategoryValidState() }
     )
 }

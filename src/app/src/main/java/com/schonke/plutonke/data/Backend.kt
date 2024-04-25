@@ -34,14 +34,17 @@ interface Backend {
     @GET("categories")
     suspend fun getAllCategories(): Response<List<Category>>
 
+    @POST("categories")
+    suspend fun addCategory(@Body category: Category): Response<Category>
+
     @PUT("categories/{id}")
     suspend fun updateCategory(
-        @Path("id") categoryId: String,
+        @Path("id") categoryId: UInt,
         @Body category: Category
     ): Response<Category>
 
     @DELETE("categories/{id}")
-    suspend fun deleteCategory(@Path("id") categoryId: String): Response<Unit>
+    suspend fun deleteCategory(@Path("id") categoryId: UInt): Response<Unit>
 }
 
 object BackendFactory {

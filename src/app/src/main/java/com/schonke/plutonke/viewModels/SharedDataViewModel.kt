@@ -18,11 +18,17 @@ import java.lang.Exception
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
-const val UNKNOWN_ERROR = "unknown error"
 const val UNABLE_TO_FETCH_DATA = "error fetching data"
-const val SERVER_ERROR = "could not add new expense due to server error"
-const val DELETE_EXPENSE_ERROR = "could not delete expense"
+const val SERVER_ERROR = "Server error"
 const val UNEXISTING_EXPENSE_ERROR = "expense does not exist"
+const val UNEXISTING_CATEGORY_ERROR = "category does not exist"
+
+private const val CATEGORY_SUCCESFULLY_ADDED = "Category added"
+private const val EXPENSE_SUCCESFULLY_ADDED = "Expense added"
+private const val EXPENSE_SUCCESFULLY_DELETED = "Expense deleted"
+private const val EXPENSE_SUCCESFULLY_MODIFIED = "Expense modified"
+private const val CATEGORY_SUCCESFULLY_DELETED = "Category deleted"
+private const val CATEGORY_SUCCESFULLY_MODIFIED = "Category modified"
 
 class SharedDataViewModel : ViewModel() {
     private val backend = BackendViewModel()
@@ -70,14 +76,18 @@ class SharedDataViewModel : ViewModel() {
         }
     }
 
-    private fun changeCategorySpentAmount(categoryID: UInt, amount: Float) {
-        val category = _sharedCategories.value?.find { it.id == categoryID }
-            ?: throw Exception("Error! Trying to change a Category that doesn't exist.") //TODO: Cambiar a error de app no q crashee
-        category.spentAmount = category.spentAmount + amount
+    private fun notifyDataUpdated() {
         dataUpdated.postValue(!dataUpdated.value!!)
     }
 
-    private fun modifyLocalExpense(
+    private fun changeCategorySpentAmount(categoryID: UInt, amount: Float) {
+        val category = _sharedCategories.value?.find { it.id == categoryID }
+            ?: throw Exception("Error! Trying to change a Category that doesn't exist.")
+        category.spentAmount = category.spentAmount + amount
+        notifyDataUpdated()
+    }
+
+    private fun modifyLocalCategorySpentAmount(
         oldExpense: Expense,
         modifiedExpense: Expense
     ) {
@@ -138,18 +148,17 @@ class SharedDataViewModel : ViewModel() {
                     addExpenseAtOrderedPosition(expenses, newExpense)
                     _sharedExpenses.postValue(expenses)
                     changeCategorySpentAmount(newExpense.categoryID, newExpense.price)
-                    isExpenseValid.value = LoadDataState.Success("Expense added")
+                    isExpenseValid.value = LoadDataState.Success(EXPENSE_SUCCESFULLY_ADDED)
                 }
             }
         }
     }
 
-
     fun removeExpense(id: UInt, isExpenseValid: MutableStateFlow<LoadDataState>) {
         viewModelScope.launch(Dispatchers.IO) {
             when (val response = backend.deleteExpense(id)) {
                 is Resource.Error -> {
-                    isExpenseValid.value = LoadDataState.Error(DELETE_EXPENSE_ERROR)
+                    isExpenseValid.value = LoadDataState.Error(SERVER_ERROR)
                 }
                 is Resource.ErrorValidation -> isExpenseValid.value =
                     LoadDataState.ErrorValidating(response.errorResponse!!)
@@ -166,7 +175,7 @@ class SharedDataViewModel : ViewModel() {
                     expenses.remove(expense)
                     _sharedExpenses.postValue(expenses)
                     changeCategorySpentAmount(categoryID, price)
-                    isExpenseValid.value = LoadDataState.Success("Expense deleted")
+                    isExpenseValid.value = LoadDataState.Success(EXPENSE_SUCCESFULLY_DELETED)
                 }
             }
         }
@@ -186,22 +195,98 @@ class SharedDataViewModel : ViewModel() {
                 isExpenseValid.value = LoadDataState.Error(UNEXISTING_EXPENSE_ERROR)
                 return@launch
             }
+            println("Gasto en modifyExpense: $modifiedExpense")
             when (val response = backend.editExpense(modifiedExpense)) {
                 is Resource.Error -> {
-                    isExpenseValid.value = LoadDataState.Error("Could not edit expense")
+                    isExpenseValid.value = LoadDataState.Error(SERVER_ERROR)
                 }
                 is Resource.ErrorValidation -> isExpenseValid.value =
                     LoadDataState.ErrorValidating(response.errorResponse!!)
                 is Resource.Success -> {
                     val oldExpense = expenses[expenseIndex]
-                    modifyLocalExpense(oldExpense, modifiedExpense)
+                    modifyLocalCategorySpentAmount(oldExpense, modifiedExpense)
                     expenses[expenseIndex] = modifiedExpense
                     _sharedExpenses.postValue(expenses)
-                    isExpenseValid.value = LoadDataState.Success("Expense modified")
+                    isExpenseValid.value = LoadDataState.Success(EXPENSE_SUCCESFULLY_MODIFIED)
                 }
             }
         }
     }
 
+    fun addCategory(category: Category, isCategoryValid: MutableStateFlow<LoadDataState>) {
+        viewModelScope.launch(Dispatchers.IO) {
+            when (val response = backend.addCategory(category)) {
+                is Resource.Error -> {
+                    isCategoryValid.value = LoadDataState.Error(SERVER_ERROR)
+                }
+                is Resource.ErrorValidation -> isCategoryValid.value =
+                    LoadDataState.ErrorValidating(response.errorResponse!!)
+                is Resource.Success -> {
+                    val newCategory = response.data!!
+                    val categories: MutableList<Category> =
+                        (_sharedCategories.value ?: mutableListOf()).toMutableList()
+//                    addExpenseAtOrderedPosition(expenses, newExpense)
+                    categories.add(newCategory)
+                    _sharedCategories.postValue(categories)
+                    notifyDataUpdated()
+                    isCategoryValid.value = LoadDataState.Success(CATEGORY_SUCCESFULLY_ADDED)
+                }
+            }
+        }
+    }
+
+    fun removeCategory(id: UInt, isCategoryValid: MutableStateFlow<LoadDataState>) {
+        viewModelScope.launch(Dispatchers.IO) {
+            when (val response = backend.deleteCategory(id)) {
+                is Resource.Error -> {
+                    isCategoryValid.value = LoadDataState.Error(SERVER_ERROR)
+                }
+                is Resource.ErrorValidation -> isCategoryValid.value =
+                    LoadDataState.ErrorValidating(response.errorResponse!!)
+                is Resource.Success -> {
+                    val categories: MutableList<Category> =
+                        (_sharedCategories.value ?: mutableListOf()).toMutableList()
+                    val category = categories.find { it.id == id }
+                    if (category == null) {
+                        isCategoryValid.value = LoadDataState.Error(UNEXISTING_CATEGORY_ERROR)
+                        return@launch
+                    }
+                    categories.remove(category)
+                    _sharedCategories.postValue(categories)
+                    notifyDataUpdated()
+                    isCategoryValid.value = LoadDataState.Success(CATEGORY_SUCCESFULLY_DELETED)
+                }
+            }
+        }
+    }
+
+    fun modifyCategory(
+        id: UInt,
+        modifiedCategory: Category,
+        isCategoryValid: MutableStateFlow<LoadDataState>
+    ) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val categories: MutableList<Category> =
+                (_sharedCategories.value ?: mutableListOf()).toMutableList()
+            val categoryIndex = categories.indexOfFirst { it.id == id }
+            if (categoryIndex == -1) {
+                isCategoryValid.value = LoadDataState.Error(UNEXISTING_EXPENSE_ERROR)
+                return@launch
+            }
+            when (val response = backend.editCategory(modifiedCategory)) {
+                is Resource.Error -> {
+                    isCategoryValid.value = LoadDataState.Error(SERVER_ERROR)
+                }
+                is Resource.ErrorValidation -> isCategoryValid.value =
+                    LoadDataState.ErrorValidating(response.errorResponse!!)
+                is Resource.Success -> {
+                    categories[categoryIndex] = modifiedCategory
+                    _sharedCategories.postValue(categories)
+                    notifyDataUpdated()
+                    isCategoryValid.value = LoadDataState.Success(CATEGORY_SUCCESFULLY_MODIFIED)
+                }
+            }
+        }
+    }
 
 }
